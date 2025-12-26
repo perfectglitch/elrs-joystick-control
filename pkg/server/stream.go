@@ -40,7 +40,7 @@ func (s *GRPCServer) StreamEvalStates(states *pb2.EvalStates, server pb2.Joystic
 	return nil
 }
 
-func (s *GRPCServer) StreamDeviceState(device *devices.InputGamepad, states *pb2.GamepadInputsStates, server pb2.JoystickControl_GetGamepadStreamServer) error {
+func (s *GRPCServer) StreamDeviceState(device devices.Gamepad, states *pb2.GamepadInputsStates, server pb2.JoystickControl_GetGamepadStreamServer) error {
 	var err error
 	states = s.DevicesCtl.GetGamepadStates(device, states)
 

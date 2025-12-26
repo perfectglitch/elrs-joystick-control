@@ -9,6 +9,11 @@ import "github.com/kaack/elrs-joystick-control/pkg/util"
 type GamepadT struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
+	// Type selects the backend driver for this gamepad: "sdl" or "udp".
+	// If omitted, "sdl" is assumed for local SDL devices.
+	Type string `json:"type,omitempty"`
+	// UDPAddr when Type=="udp" specifies the UDP listen address (e.g. ":9000").
+	UDPAddr string `json:"udp_addr,omitempty"`
 }
 
 // InputGamepad *** Gamepad ***

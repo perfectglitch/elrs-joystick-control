@@ -43,7 +43,7 @@ func (i *InputHat) _Eval(c *Config) (src IOType, out util.RawValue, ch util.Chan
 		return nil, 0, -1, true
 	}
 
-	var rawDevice *devices.InputGamepad
+	var rawDevice devices.Gamepad
 	var ok bool
 	var invert util.RawValue
 

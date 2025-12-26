@@ -52,6 +52,9 @@ func main() {
 	devicesCtl := dc.NewCtl()
 	defer devicesCtl.Quit()
 
+	// let remote devices notify the devices controller about incoming input
+	dc.SetDeviceEventCallback(devicesCtl.AlertDeviceChan)
+
 	configCtl := cc.NewCtl(devicesCtl)
 
 	defer configCtl.Quit()

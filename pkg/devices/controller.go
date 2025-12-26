@@ -13,7 +13,7 @@ import (
 )
 
 type Controller struct {
-	Gamepads         map[string]*InputGamepad
+	Gamepads         map[string]Gamepad
 	t                *tomb.Tomb
 	DeviceEventCount int32
 	DeviceEventChan  chan int32
@@ -31,7 +31,7 @@ func NewCtl() *Controller {
 	return devicesCtl
 }
 
-func (c *Controller) Gamepad(id string) (*InputGamepad, bool) {
+func (c *Controller) Gamepad(id string) (Gamepad, bool) {
 	res, ok := c.Gamepads[id]
 	return res, ok
 }
@@ -42,6 +42,7 @@ func (c *Controller) Init() (err error) {
 	}
 	c.Gamepads = EnumerateDevices()
 	c.StartPolling()
+
 	return err
 }
 
@@ -56,7 +57,7 @@ func (c *Controller) Quit() {
 	sdl.Quit()
 }
 
-func (c *Controller) GetGamepadStates(device *InputGamepad, states *pb.GamepadInputsStates) *pb.GamepadInputsStates {
+func (c *Controller) GetGamepadStates(device Gamepad, states *pb.GamepadInputsStates) *pb.GamepadInputsStates {
 
 	axisNumber := 0
 	axesCount := int(device.Axes())

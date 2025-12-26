@@ -152,6 +152,70 @@ func (s *GRPCServer) StartLink(_ context.Context, req *pb.StartLinkReq) (*pb.Emp
 	if err := s.LinkCtl.StartSupervisor(req.Port, req.BaudRate); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	fmt.Println("Checking for UDP gamepads...")
+	if s.ConfigCtl == nil || s.ConfigCtl.Config == nil {
+		fmt.Println("no config available")
+	} else {
+		fmt.Printf("IOMap contains %d entries:\n", len(s.ConfigCtl.Config.IOMap))
+		for k, ih := range s.ConfigCtl.Config.IOMap {
+			if ih == nil || ih.IO == nil {
+				fmt.Printf(" - %s: <nil>\n", k)
+				continue
+			}
+			fmt.Printf(" - %s: %T\n", k, ih.IO)
+		}
+	}
+	// walk the IO tree recursively to find nested gamepad nodes
+	seen := map[string]struct{}{}
+	var walk func(ih *cc.IOHolder)
+	walk = func(ih *cc.IOHolder) {
+		if ih == nil || ih.IO == nil {
+			return
+		}
+
+		if ig, ok := ih.IO.(*cc.InputGamepad); ok {
+			if ig.Gamepad.Type == "udp" {
+				// dedupe multiple references to the same nested gamepad
+				if _, ok := seen[ig.Gamepad.Id]; ok {
+					return
+				}
+				seen[ig.Gamepad.Id] = struct{}{}
+
+				fmt.Printf("Found UDP gamepad: %s at %s\n", ig.Gamepad.Id, ig.Gamepad.UDPAddr)
+				addr := ig.Gamepad.UDPAddr
+				if addr == "" {
+					addr = ":9000"
+				}
+				// only add if not present
+				if _, exists := s.DevicesCtl.Gamepads[ig.Gamepad.Id]; !exists {
+					if g, err := dc.NewUDPGamepad(ig.Gamepad.Id, ig.Gamepad.Name, addr); err == nil {
+						fmt.Printf(" - registering UDP gamepad: %s at %s\n", ig.Gamepad.Id, addr)
+						// register in package registry and add to controller map
+						dc.RegisterRemoteGamepad(ig.Gamepad.Id, g)
+						s.DevicesCtl.Gamepads[ig.Gamepad.Id] = g
+					} else {
+						fmt.Printf(" - failed to create UDP gamepad %s on %s: %v\n", ig.Gamepad.Id, addr, err)
+					}
+				} else {
+					fmt.Printf(" - UDP gamepad %s already present\n", ig.Gamepad.Id)
+				}
+			} else {
+				fmt.Printf("Not a UDP gamepad: %s (type: %s)\n", ig.Gamepad.Id, ig.Gamepad.Type)
+			}
+		}
+
+		if children := ih.Children(); children != nil {
+			for _, ch := range *children {
+				walk(ch)
+			}
+		}
+	}
+
+	for _, ih := range s.ConfigCtl.Config.IOMap {
+		walk(ih)
+	}
+
 	return &pb.Empty{}, nil
 }
 
@@ -159,6 +223,17 @@ func (s *GRPCServer) StopLink(context.Context, *pb.Empty) (*pb.Empty, error) {
 	if err := s.LinkCtl.StopSupervisor(); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	// stop and remove UDP gamepads
+	for id, g := range s.DevicesCtl.Gamepads {
+		if udp, ok := g.(*dc.UDPGamepad); ok {
+			udp.Close()
+			// unregister from package registry as well
+			dc.UnregisterRemoteGamepad(id)
+			delete(s.DevicesCtl.Gamepads, id)
+		}
+	}
+
 	return &pb.Empty{}, nil
 }
 
@@ -174,13 +249,12 @@ func (s *GRPCServer) GetGamepadStream(req *pb.GetGamepadStreamReq, server pb.Joy
 
 	//fmt.Printf("fetch response for id : %s\n", req.Device.Id)
 
-	var device *dc.InputGamepad
+	var device dc.Gamepad
 	var ok bool
 	var err error
 	if device, ok = s.DevicesCtl.Gamepad(req.Gamepad.Id); !ok {
 		return status.Error(codes.InvalidArgument, fmt.Sprintf("gamepad(id: %s) device not found", req.Gamepad.Id))
 	}
-
 	state := s.DevicesCtl.GetGamepadStates(device, nil)
 	if err = s.StreamDeviceState(device, state, server); err != nil {
 		return err

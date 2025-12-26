@@ -17,6 +17,18 @@ type InputGamepad struct {
 	Joy *sdl.Joystick `json:"-"`
 }
 
+// Gamepad is the interface for gamepad-like input devices.
+type Gamepad interface {
+	Axis(axis int) util.RawValue
+	Button(button int) util.RawValue
+	Hat(hat int) util.RawValue
+	Close()
+	InstanceId() int32
+	Axes() int32
+	Buttons() int32
+	Hats() int32
+}
+
 func (d *InputGamepad) Axis(axis int) util.RawValue {
 	return util.RawValue(d.Joy.Axis(axis))
 }

@@ -81,6 +81,10 @@ definitions:
         $ref: '#/definitions/subtract'
       max:
         $ref: '#/definitions/max'
+      udp_addr:
+        title: UDP listen address
+        description: UDP address to listen for virtual gamepad packets when `type` is `udp` (e.g. ":9000").
+        type: string
       min:
         $ref: '#/definitions/min'
       invert:
@@ -426,6 +430,13 @@ definitions:
             $meta:
               autocomplete: gamepads
             type: string
+          type:
+            title: Driver type
+            description: The backend driver for this gamepad. Use "sdl" for local SDL devices or "udp" for a UDP virtual device.
+            type: string
+            enum:
+              - sdl
+              - udp
         unevaluatedProperties: true
     unevaluatedProperties: true
   switch:

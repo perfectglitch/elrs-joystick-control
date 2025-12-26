@@ -20,8 +20,8 @@ func GetJoyStickId(joystick *sdl.Joystick) string {
 	return hex.EncodeToString(hash[:])[1:7]
 }
 
-func EnumerateDevices() map[string]*InputGamepad {
-	devices := make(map[string]*InputGamepad)
+func EnumerateDevices() map[string]Gamepad {
+	devices := make(map[string]Gamepad)
 
 	for i := 0; i < 16; i++ {
 		stick := sdl.JoystickOpen(i)
@@ -35,6 +35,15 @@ func EnumerateDevices() map[string]*InputGamepad {
 			dev.Id = fmt.Sprintf("%s_%d", dev.Id, i)
 		}
 		devices[dev.Id] = &dev
+	}
+
+	// merge any registered remote gamepads into the device list
+	for id, g := range GetRemoteGamepads() {
+		if _, ok := devices[id]; ok {
+			// prefer physical device entries already present
+			continue
+		}
+		devices[id] = g
 	}
 
 	return devices

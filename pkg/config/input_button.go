@@ -69,7 +69,7 @@ func (i *InputButton) _Eval(c *Config) (src IOType, out util.RawValue, ch util.C
 		return nil, 0, -1, true
 	}
 
-	var gamepad *devices.InputGamepad
+	var gamepad devices.Gamepad
 	var ok bool
 
 	switch in := (src).(type) {

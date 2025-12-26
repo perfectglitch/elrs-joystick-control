@@ -15,10 +15,10 @@ type Config struct {
 	Ctl   *Controller          `json:"-"`
 }
 
-func (c *Config) GetInputGamepad(deviceId string) (*devices.InputGamepad, bool) {
+func (c *Config) GetInputGamepad(deviceId string) (devices.Gamepad, bool) {
 	var ok bool
 
-	var res *devices.InputGamepad
+	var res devices.Gamepad
 	res, ok = c.Ctl.deviceCtl.Gamepads[deviceId]
 
 	return res, ok

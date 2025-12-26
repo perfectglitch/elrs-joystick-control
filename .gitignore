@@ -7,3 +7,7 @@ build
 *.iml
 node_modules
 node_modules/**
+.cache
+elrs-joystick-control
+udp-forwarder-linux
+udp-forwarder.exe

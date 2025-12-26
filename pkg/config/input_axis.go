@@ -78,7 +78,7 @@ func (i *InputAxis) _Eval(c *Config) (src IOType, out util.RawValue, ch util.Cha
 		return nil, 0, -1, true
 	}
 
-	var gamepad *devices.InputGamepad
+	var gamepad devices.Gamepad
 	var ok bool
 	var invert util.RawValue
 
