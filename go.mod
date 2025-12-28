@@ -17,7 +17,7 @@ require (
 	github.com/veandco/go-sdl2 v0.4.34
 	go.bug.st/serial v1.5.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	google.golang.org/grpc v1.55.0
+	google.golang.org/grpc v1.66.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
 	gopkg.in/yaml.v3 v3.0.1
