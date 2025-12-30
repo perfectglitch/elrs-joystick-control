@@ -9,5 +9,6 @@ node_modules
 node_modules/**
 .cache
 elrs-joystick-control
+udp-forwarder
 udp-forwarder-linux
 udp-forwarder.exe

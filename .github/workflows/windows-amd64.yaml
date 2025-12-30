@@ -12,17 +12,18 @@ jobs:
         with:
           fetch-depth: 0
       - name: Download builder image
-        run: docker pull oneeyefpv/windows-amd64-builder
+        run: docker pull perfectglitch/windows-amd64-builder
       - name: Build binary
         run: >
-          docker run -m 4096m -v ${{ github.workspace }}:C:\app -t oneeyefpv/windows-amd64-builder dir /s /c "
+          docker run -m 4096m -v ${{ github.workspace }}:C:\app -t perfectglitch/windows-amd64-builder dir /s /c "
           cd app && 
           dir /a && 
           go generate ./... && 
           go build -trimpath -tags static -o elrs-joystick-control.exe .\cmd\elrs-joystick-control\. &&
+          go build -trimpath -tags static -o udp-forwarder.exe .\cmd\udp-forwarder\. &&
           go run scripts\cmd\build-release-zip\build-release-zip.go --location C:\app --prefix elrs-joystick-control --files *.exe,LICENSE* "
       - name: Upload binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-windows-amd64
           path: "*.zip"
