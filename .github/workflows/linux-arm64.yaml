@@ -19,8 +19,8 @@ jobs:
           cd app && 
           ls -la && 
           go generate ./... && 
-          go build -trimpath -tags static --ldflags '-s -w' -o elrs-joystick-control ./cmd/elrs-joystick-control/.  &&
-          go build -trimpath -tags static --ldflags '-s -w' -o udp-forwarder ./cmd/udp-forwarder/. &&
+          go build -trimpath --ldflags '-s -w' -o elrs-joystick-control ./cmd/elrs-joystick-control/.  &&
+          go build -trimpath --ldflags '-s -w' -o udp-forwarder ./cmd/udp-forwarder/. &&
           go run scripts/cmd/build-release-zip/build-release-zip.go --location /app --prefix elrs-joystick-control --files elrs-joystick-control,udp-forwarder,LICENSE* "
       - name: Upload binary
         uses: actions/upload-artifact@v4
