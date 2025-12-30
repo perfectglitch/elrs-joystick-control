@@ -8,7 +8,7 @@ LABEL maintainer="oneeyefpv@gmail.com"
 
 
 # GoLang
-ARG GO_VERSION=1.20.6
+ARG GO_VERSION=1.23.6
 ARG GO_ZIP_FILE=go${GO_VERSION}.windows-amd64.zip
 ARG GO_ZIP_URL=https://dl.google.com/go/${GO_ZIP_FILE}
 
@@ -67,19 +67,18 @@ RUN echo "*** Install Microsoft Visual C++ redistributable packages runtime" && 
 RUN echo "**** Download and install golang version: %GO_VERSION%" \
     && echo "**** url: %GO_ZIP_URL%" \
     && curl -sfLO %GO_ZIP_URL% \
-    && tar -xvf %GO_ZIP_FILE% \
-    && move go go-sdk \
-    && mkdir go \
-    && setx path "%path%;C:\go-sdk\bin;C:\go\bin" \
-    && setx GOROOT "C:\go-sdk" \
-    && setx GOPATH "C:\go"
+    && powershell -Command "Expand-Archive -LiteralPath '%GO_ZIP_FILE%' -DestinationPath C:\ ; Rename-Item -Path 'C:\go' -NewName 'go-sdk'" \
+    && mkdir C:\go \
+    && setx path "%path%;C:\\go-sdk\\bin;C:\\go\\bin" \
+    && setx GOROOT "C:\\go-sdk" \
+    && setx GOPATH "C:\\go"
 
 RUN echo "*** Download and install protoc version %PROTOC_VERSION%" \
     && echo "*** url: %PROTOC_ZIP_URL%" \
     && curl -sfLO %PROTOC_ZIP_URL% \
-    && mkdir protoc \
-    && tar -xvf %PROTOC_ZIP_FILE% -C protoc \
-    && setx path "%path%;C:\protoc\bin"
+    && mkdir C:\protoc \
+    && powershell -Command "Expand-Archive -LiteralPath '%PROTOC_ZIP_FILE%' -DestinationPath 'C:\\protoc'" \
+    && setx path "%path%;C:\\protoc\\bin"
 
 RUN echo "*** Download and install grpc-web protoc plugin version %GRPC_WEB_VERSION%" \
     && echo "*** url: %GRPC_WEB_ZIP_URL%" \
@@ -89,16 +88,19 @@ RUN echo "*** Download and install grpc-web protoc plugin version %GRPC_WEB_VERS
 RUN echo "*** Download and install protoc-js version %PROTOC_JS_VERSION%" \
     && echo "*** url: %PROTOC_JS_ZIP_FILE%" \
     && curl -sfLO %PROTOC_JS_URL% \
-    && mkdir protoc-js \
-    && tar -xvf %PROTOC_JS_ZIP_FILE% -C protoc-js \
-    && setx path "%path%;C:\protoc-js\bin"
+    && mkdir C:\protoc-js \
+    && powershell -Command "Expand-Archive -LiteralPath '%PROTOC_JS_ZIP_FILE%' -DestinationPath 'C:\\protoc-js'" \
+    && setx path "%path%;C:\\protoc-js\\bin"
 
 RUN echo "*** Download and install node version %NODE_VERSION%" \
     && echo "url: %NODE_ZIP_URL%" \
     && curl -sfL %NODE_ZIP_URL% -o node-x64.zip \
-    && mkdir node \
-    && tar xvf node-x64.zip --strip-components=1 -C node \
-    && setx path "%path%;C:\node"
+    && powershell -Command "Expand-Archive -LiteralPath 'node-x64.zip' -DestinationPath 'C:\\tmp_node' ; New-Item -ItemType Directory -Path 'C:\\node' -Force | Out-Null ; Get-ChildItem -Path 'C:\\tmp_node' -Directory | ForEach-Object { Copy-Item -Path ($_.FullName + '\\*') -Destination 'C:\\node' -Recurse -Force } ; Remove-Item -Recurse -Force 'C:\\tmp_node'" \
+    && setx path "%path%;C:\\node;C:\\node\\node_modules\\npm\\bin"
+
+RUN echo "*** Verify node/npm" \
+    && node -v \
+    && npm -v
 
 RUN echo "*** Downloading 7z version %S7Z_VERSION%" \
     && echo "url: %S7Z_URL% " \
@@ -115,7 +117,7 @@ RUN echo "*** Download and install mingw version %MINGW_VERSION% revision %MINGW
 RUN echo "*** Download and install SDL2 version %SDL2_VERSION%" \
     && echo "url: %SDL2_ZIP_FILE%" \
     && curl -sfL %SDL2_ZIP_FILE%  -o sdl2-mingw.zip \
-    && tar -C mingw64 --strip-components=2 -xvf sdl2-mingw.zip SDL2-%SDL2_VERSION%/x86_64-w64-mingw32
+    && powershell -Command "Expand-Archive -LiteralPath 'sdl2-mingw.zip' -DestinationPath 'C:\\tmp_sdl' ; New-Item -ItemType Directory -Path 'C:\\mingw64' -Force | Out-Null ; Copy-Item -Path 'C:\\tmp_sdl\\SDL2-%SDL2_VERSION%\\x86_64-w64-mingw32\\*' -Destination 'C:\\mingw64' -Recurse -Force ; Remove-Item -Recurse -Force 'C:\\tmp_sdl'"
 
 
 RUN  echo "*** Installing protoc-gen-go / protoc-gen-go-grpc" && \
