@@ -28,3 +28,17 @@ jobs:
           name: release-linux-amd64
           path: "*.zip"
           retention-days: 5
+      - name: Upload zips to GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPLOAD_URL: ${{ github.event.release.upload_url }}
+        run: |
+          upload_url=${UPLOAD_URL%\{*}
+          for f in *.zip; do
+            echo "Uploading $f"
+            curl -s -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/zip" \
+              --data-binary @"$f" "$upload_url?name=$(basename "$f")"
+          done
