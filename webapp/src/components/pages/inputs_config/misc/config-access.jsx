@@ -4,6 +4,7 @@
 
 import * as conf from "./../../../misc/config-access-base";
 import {InputsConfigKey} from "./constants";
+import {createConfig} from "./node-access";
 
 
 
@@ -13,6 +14,10 @@ export const saveConfigToStorage = function () {
 
 export const saveConfigToFile = function () {
     return conf.saveConfigToFile(InputsConfigKey);
+}
+
+export const saveBackendConfigToFile = function () {
+    return conf.saveBackendConfigToFile(InputsConfigKey, createConfig);
 }
 
 

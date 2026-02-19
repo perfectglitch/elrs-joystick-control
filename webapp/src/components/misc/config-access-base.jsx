@@ -67,6 +67,26 @@ export const saveConfigToFile = function (key) {
     saveAs(blob, fileName);
 }
 
+export const saveBackendConfigToFile = function (key, createConfigFunc) {
+    // Create the backend format config using the provided function
+    let [backendConfig, errors] = createConfigFunc();
+    
+    if (errors && errors.length > 0) {
+        throw new Error("Cannot export config with errors. Please fix errors first.");
+    }
+
+    // Wrap in the expected backend format
+    let fileConfig = {
+        config: backendConfig
+    };
+
+    let cDate = new Date();
+    let fileName = `${key}-backend-` + cDate.getUTCFullYear() + "-" + String(cDate.getUTCMonth()).padStart(2, "0") + "-" + String(cDate.getUTCDate()).padStart(2, "0") + "T" + String(cDate.getUTCHours()).padStart(2, "0") + String(cDate.getUTCMinutes()).padStart(2, "0") + String(cDate.getUTCSeconds()).padStart(2, "0") + "Z" + ".json"
+
+    let blob = new Blob([JSON.stringify(fileConfig, null, 2)], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, fileName);
+}
+
 export const loadConfigFromFile = async function (key, file) {
     let text = await readFileText(file);
 

@@ -37,7 +37,7 @@ import {
     showConfigErrors, showSchemaErrors
 } from "./node-access";
 
-import {loadConfigFromFile, saveConfigToFile} from "./config-access";
+import {loadConfigFromFile, saveConfigToFile, saveBackendConfigToFile} from "./config-access";
 import {NodeConfigError, Warning} from "../../../misc/errors";
 // noinspection DuplicatedCode
 import i18n from "../../../misc/I18n";
@@ -191,6 +191,15 @@ export function InputControls() {
         saveConfigToFile();
     }, []);
 
+    const onSaveBackendConfigToFile = useCallback(() => {
+        try {
+            saveBackendConfigToFile();
+            showSuccess(`Backend config successfully exported`);
+        } catch (ex) {
+            showError(`${i18n("error-msg-no-config")} ${ex.message}`);
+        }
+    }, []);
+
 
     const onLoadFromFile = useCallback(async (event) => {
         // noinspection DuplicatedCode
@@ -296,11 +305,25 @@ export function InputControls() {
                         style={{
                             paddingBottom: 8, paddingTop: 8, cursor: "pointer",
                         }}
-                        title="Save to file">
+                        title="Save to file (UI format)">
                         <Zoom
                             in={true} timeout={300}>
                             <Box component="svg" style={{width: 22, height: 32}}>
                                 <SaveFileIcon/>
+                            </Box>
+                        </Zoom>
+                    </CustomControlButton>
+                    <CustomControlButton
+                        onClick={onSaveBackendConfigToFile}
+                        style={{
+                            paddingBottom: 8, paddingTop: 8, cursor: "pointer",
+                            backgroundColor: "rgb(50 120 50)"
+                        }}
+                        title="Export for command-line (backend format)">
+                        <Zoom
+                            in={true} timeout={350}>
+                            <Box component="svg" style={{width: 22, height: 32}}>
+                                <SaveFileIcon style={{fill: "#ffffff"}}/>
                             </Box>
                         </Zoom>
                     </CustomControlButton>
