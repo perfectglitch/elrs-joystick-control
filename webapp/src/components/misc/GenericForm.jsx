@@ -4,7 +4,7 @@
 
 import React, {useCallback, useState, useRef, useEffect} from 'react';
 import Box from '@mui/material/Box';
-import {Autocomplete, TextField, Typography} from "@mui/material";
+import {Autocomplete, TextField, Typography, MenuItem} from "@mui/material";
 import LookupTable from "./LookupTable";
 import {HelpIconWithText} from "./HelpIconWithText";
 
@@ -158,6 +158,30 @@ function GenericForm({formFields, formTitle, formIcon, formHelp, data, onDismoun
                                     return <TextField {...params} label={formField.label} variant="standard"/>;
                                 }}
                             />
+                            <HelpIconWithText style={{top: 3}}>{formField.help}</HelpIconWithText>
+                        </Box>;
+                    case "select":
+                        return <Box
+                            key={`${formField.key}-box`}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                alignContent: "flex-end",
+                                justifyContent: "flex-start",
+                            }}>
+                            <TextField
+                                select
+                                style={{marginLeft: 0, marginBottom: 10, width: "100%"}}
+                                id={formField.key}
+                                key={formField.key}
+                                value={dataRef.current[formField.key] || ""}
+                                onChange={(event) => { dataRef.current = {...dataRef.current, [formField.key]: event.target.value } }
+                                }
+                                variant="standard"
+                                label={formField.label}
+                            >
+                                {(formField.options || []).map((opt) => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+                            </TextField>
                             <HelpIconWithText style={{top: 3}}>{formField.help}</HelpIconWithText>
                         </Box>;
                     case "lookup-table":

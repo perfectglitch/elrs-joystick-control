@@ -156,16 +156,18 @@ func (s *GRPCServer) StartLink(_ context.Context, req *pb.StartLinkReq) (*pb.Emp
 	fmt.Println("Checking for UDP gamepads...")
 	if s.ConfigCtl == nil || s.ConfigCtl.Config == nil {
 		fmt.Println("no config available")
-	} else {
-		fmt.Printf("IOMap contains %d entries:\n", len(s.ConfigCtl.Config.IOMap))
-		for k, ih := range s.ConfigCtl.Config.IOMap {
-			if ih == nil || ih.IO == nil {
-				fmt.Printf(" - %s: <nil>\n", k)
-				continue
-			}
-			fmt.Printf(" - %s: %T\n", k, ih.IO)
-		}
+		return &pb.Empty{}, nil
 	}
+	
+	fmt.Printf("IOMap contains %d entries:\n", len(s.ConfigCtl.Config.IOMap))
+	for k, ih := range s.ConfigCtl.Config.IOMap {
+		if ih == nil || ih.IO == nil {
+			fmt.Printf(" - %s: <nil>\n", k)
+			continue
+		}
+		fmt.Printf(" - %s: %T\n", k, ih.IO)
+	}
+	
 	// walk the IO tree recursively to find nested gamepad nodes
 	seen := map[string]struct{}{}
 	var walk func(ih *cc.IOHolder)

@@ -8,6 +8,18 @@ export function generateStringForm({fieldDef, fieldName}) {
     let autocomplete = getFieldAutoCompleteFunction(fieldDef);
 
     let defaultValue = typeof fieldDef?.default === "string" ? fieldDef?.default : "";
+    // if schema defines enum values, render a select
+    if (Array.isArray(fieldDef?.enum)) {
+        return {
+            type: "select",
+            key: fieldName,
+            label: fieldDef?.title || "",
+            help: fieldDef?.description,
+            default: defaultValue,
+            options: fieldDef.enum
+        }
+    }
+
     return {
         type: autocomplete ? "auto-complete" : "text",
         key: fieldName,

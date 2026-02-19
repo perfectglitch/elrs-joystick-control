@@ -32,17 +32,7 @@ func Init(txServerPortName, configFilePath string, txServerPortBaudRate, grpcPor
 		client := pb.NewJoystickControlClient(conn)
 		var res *pb.Empty
 
-		if len(txServerPortName) != 0 && txServerPortBaudRate != 0 {
-			if res, err = client.StartLink(ctx, &pb.StartLinkReq{
-				Port:     txServerPortName,
-				BaudRate: int32(txServerPortBaudRate),
-			}); err != nil {
-				panic(err)
-			}
-
-			fmt.Printf("%v", res)
-		}
-
+		// Load config first, before starting link (link may need config for UDP gamepads)
 		if len(configFilePath) != 0 {
 
 			var configJson []byte
@@ -60,6 +50,17 @@ func Init(txServerPortName, configFilePath string, txServerPortBaudRate, grpcPor
 
 			if res, err = client.SetConfig(ctx, &pb.SetConfigReq{
 				Config: &configPb,
+			}); err != nil {
+				panic(err)
+			}
+
+			fmt.Printf("%v", res)
+		}
+
+		if len(txServerPortName) != 0 && txServerPortBaudRate != 0 {
+			if res, err = client.StartLink(ctx, &pb.StartLinkReq{
+				Port:     txServerPortName,
+				BaudRate: int32(txServerPortBaudRate),
 			}); err != nil {
 				panic(err)
 			}
