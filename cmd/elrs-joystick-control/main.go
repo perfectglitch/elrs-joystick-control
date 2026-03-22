@@ -41,6 +41,9 @@ func main() {
 	disableWebUI := new(bool)
 	flag.BoolVar(disableWebUI, "disable-web-ui", false, "disable the Web-UI HTTP server")
 
+	udpJoystickPort := new(int)
+	flag.IntVar(udpJoystickPort, "udp-joystick-port", 9000, "UDP server port for remote joystick input")
+
 	flag.Parse()
 
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
@@ -65,7 +68,7 @@ func main() {
 	linkCtl := lc.NewCtl(devicesCtl, serialCtl, configCtl)
 	defer linkCtl.Quit()
 
-	serverCtl := gc.NewCtl(*grpcPort, grpcServer, devicesCtl, serialCtl, configCtl, linkCtl, httpCtl)
+	serverCtl := gc.NewCtl(*grpcPort, grpcServer, devicesCtl, serialCtl, configCtl, linkCtl, httpCtl, *udpJoystickPort)
 	defer serverCtl.Quit()
 
 	// Automatically configure through gprc when conditions are met

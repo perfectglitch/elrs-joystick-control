@@ -25,11 +25,12 @@ import (
 
 type GRPCServer struct {
 	pb.UnimplementedJoystickControlServer
-	DevicesCtl *dc.Controller
-	SerialCtl  *sc.Controller
-	ConfigCtl  *cc.Controller
-	LinkCtl    *lc.Controller
-	HTTPCtl    *http.Controller
+	DevicesCtl     *dc.Controller
+	SerialCtl      *sc.Controller
+	ConfigCtl      *cc.Controller
+	LinkCtl        *lc.Controller
+	HTTPCtl        *http.Controller
+	DefaultUDPPort int
 }
 
 func (s *GRPCServer) GetGamepads(context.Context, *pb.Empty) (*pb.GetGamepadsRes, error) {
@@ -187,7 +188,11 @@ func (s *GRPCServer) StartLink(_ context.Context, req *pb.StartLinkReq) (*pb.Emp
 				fmt.Printf("Found UDP gamepad: %s at %s\n", ig.Gamepad.Id, ig.Gamepad.UDPAddr)
 				addr := ig.Gamepad.UDPAddr
 				if addr == "" {
-					addr = ":9000"
+					if s.DefaultUDPPort > 0 {
+						addr = fmt.Sprintf(":%d", s.DefaultUDPPort)
+					} else {
+						addr = ":9000"
+					}
 				}
 				// only add if not present
 				if _, exists := s.DevicesCtl.Gamepads[ig.Gamepad.Id]; !exists {

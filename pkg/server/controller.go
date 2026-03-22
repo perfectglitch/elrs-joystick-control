@@ -19,26 +19,28 @@ import (
 )
 
 type Controller struct {
-	gRPCPort   int
-	gRPCServer *grpc.Server
-	devicesCtl *dc.Controller
-	serialCtl  *sc.Controller
-	configCtl  *cc.Controller
-	linkCtl    *lc.Controller
-	httpCtl    *hc.Controller
+	gRPCPort       int
+	gRPCServer     *grpc.Server
+	devicesCtl     *dc.Controller
+	serialCtl      *sc.Controller
+	configCtl      *cc.Controller
+	linkCtl        *lc.Controller
+	httpCtl        *hc.Controller
+	defaultUDPPort int
 
 	gRPCTomb *tomb.Tomb
 }
 
-func NewCtl(gRPCPort int, gRPCServer *grpc.Server, devicesCtl *dc.Controller, serialCtl *sc.Controller, configCtl *cc.Controller, linkCtl *lc.Controller, httpCtl *hc.Controller) *Controller {
+func NewCtl(gRPCPort int, gRPCServer *grpc.Server, devicesCtl *dc.Controller, serialCtl *sc.Controller, configCtl *cc.Controller, linkCtl *lc.Controller, httpCtl *hc.Controller, defaultUDPPort int) *Controller {
 	serverCtl := &Controller{
-		gRPCPort:   gRPCPort,
-		gRPCServer: gRPCServer,
-		devicesCtl: devicesCtl,
-		serialCtl:  serialCtl,
-		configCtl:  configCtl,
-		linkCtl:    linkCtl,
-		httpCtl:    httpCtl,
+		gRPCPort:       gRPCPort,
+		gRPCServer:     gRPCServer,
+		devicesCtl:     devicesCtl,
+		serialCtl:      serialCtl,
+		configCtl:      configCtl,
+		linkCtl:        linkCtl,
+		httpCtl:        httpCtl,
+		defaultUDPPort: defaultUDPPort,
 	}
 
 	if err := serverCtl.Init(); err != nil {
@@ -63,11 +65,12 @@ func (c *Controller) Start() (err error) {
 	c.gRPCTomb.Go(func() error {
 
 		pb.RegisterJoystickControlServer(c.gRPCServer, &GRPCServer{
-			DevicesCtl: c.devicesCtl,
-			SerialCtl:  c.serialCtl,
-			ConfigCtl:  c.configCtl,
-			LinkCtl:    c.linkCtl,
-			HTTPCtl:    c.httpCtl,
+			DevicesCtl:     c.devicesCtl,
+			SerialCtl:      c.serialCtl,
+			ConfigCtl:      c.configCtl,
+			LinkCtl:        c.linkCtl,
+			HTTPCtl:        c.httpCtl,
+			DefaultUDPPort: c.defaultUDPPort,
 		})
 
 		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", c.gRPCPort))
