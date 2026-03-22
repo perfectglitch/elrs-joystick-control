@@ -1,0 +1,31 @@
+name: Create Release Tag
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name (e.g. v0.2.4-udp)'
+        required: true
+        default: ''
+      commit:
+        description: 'Commit SHA to tag (defaults to latest main)'
+        required: false
+        default: ''
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Create tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.tag }}
+          COMMIT: ${{ github.event.inputs.commit }}
+        run: |
+          TARGET=${COMMIT:-$(git rev-parse origin/main)}
+          git tag "$TAG" "$TARGET"
+          git push origin "refs/tags/$TAG"
