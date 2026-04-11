@@ -5,10 +5,11 @@
 import {styled} from "@mui/system";
 import {Accordion, AccordionSummary} from "@mui/material";
 import React, {useState} from "react";
-import {CRSFDeviceFieldCommand, CRSFDeviceFieldTextSelect} from "../../../pbwrap";
+import {CRSFDeviceFieldCommand, CRSFDeviceFieldTextSelect, CRSFDeviceFieldUint8} from "../../../pbwrap";
 import Box from "@mui/material/Box";
 import {CRSFDeviceViewerTextSelect} from "./CRSFDeviceViewerTextSelect";
 import {CRSFDeviceViewerCommand} from "./CRSFDeviceViewerCommand";
+import {CRSFDeviceViewerUint8} from "./CRSFDeviceViewerUint8";
 
 export const StyledAccordion = styled((props) => (
     <Accordion disableGutters={true} elevation={0} square={true} {...props} children={props.children}/>))({
@@ -36,6 +37,8 @@ export function CRSFDeviceViewerFolder({device, folder, setReload}) {
         {folder.fields.map(function (field) {
             if (field instanceof CRSFDeviceFieldTextSelect) {
                 return <CRSFDeviceViewerTextSelect setReload={setReload} device={device} field={field} key={`text-select-${field.getId()}`} />;
+            } else if (field instanceof CRSFDeviceFieldUint8) {
+                return <CRSFDeviceViewerUint8 setReload={setReload} device={device} field={field} key={`uint8-${field.getId()}`} />;
             } else if (field instanceof CRSFDeviceFieldCommand) {
                 return <CRSFDeviceViewerCommand setReload={setReload} device={device}  field={field} key={`command-${field.getId()}`} />;
             } else {

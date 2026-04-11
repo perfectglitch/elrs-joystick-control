@@ -8,7 +8,7 @@ import {AccordionDetails, Typography} from "@mui/material";
 
 import Box from "@mui/material/Box";
 import {getCRSFDeviceFields} from "../../misc/server";
-import {CRSFDeviceFieldData, CRSFDeviceFieldFolder, CRSFDeviceFieldType} from "../../../pbwrap";
+import {CRSFDeviceFieldData, CRSFDeviceFieldFolder, CRSFDeviceFieldType, CRSFDeviceFieldUint8} from "../../../pbwrap";
 
 import {ExpandMore} from "@mui/icons-material";
 import {CRSFDeviceViewerFolder, StyledAccordion, StyledAccordionSummary} from "./CRSFDeviceViewerFolder";
@@ -128,6 +128,14 @@ export function CRSFDeviceViewer({device, open, onClose}) {
                             continue;
                         }
                         folders.get(textSelect.getParentId()).fields.push(textSelect);
+                        break;
+                    case CRSFDeviceFieldData.DataCase.UINT8:
+                        let uint8Field = fieldData.getUint8();
+                        if (!folders.has(uint8Field.getParentId())) {
+                            console.error(`could not find folder(id: ${uint8Field.getParentId()}) for uint8 field ${uint8Field.getName()}`)
+                            continue;
+                        }
+                        folders.get(uint8Field.getParentId()).fields.push(uint8Field);
                         break;
                     case CRSFDeviceFieldData.DataCase.COMMAND:
                         let command = fieldData.getCommand();

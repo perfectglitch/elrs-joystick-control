@@ -1,5 +1,5 @@
 {
-  "release_tag": "v0.2.4-udp",
-  "commit_hash": "b9fa3ddccc580cbd7ce044f64a7c7bc39e1461c8",
+  "release_tag": "(devel)",
+  "commit_hash": "684a02c28f2dbee2920480b72c24a0d10382e2a7",
   "branch_name": "main"
 }
