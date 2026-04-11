@@ -152,6 +152,7 @@ var fieldConstructors = map[pb.CRSFDeviceFieldType]func(id uint32, parentId uint
 	pb.CRSFDeviceFieldType_UINT8:       settings.NewUint8Field,
 	pb.CRSFDeviceFieldType_UINT16:      settings.NewUint16Field,
 	pb.CRSFDeviceFieldType_UINT32:      settings.NewUint32Field,
+	pb.CRSFDeviceFieldType_VTX:         settings.NewVTXField,
 }
 
 func (c *Controller) GetCRSFDeviceFields(deviceInfo *pb.CRSFDeviceInfoData) ([]*pb.CRSFDeviceFieldData, error) {
