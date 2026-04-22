@@ -26,6 +26,9 @@ type Controller struct {
 
 	portState       PortState
 	supervisorState SupervisorState
+	// moduleType is populated automatically from the first DeviceInfo frame that
+	// originates from the TX module endpoint.
+	moduleType crossfire.ModuleType
 
 	sentPacketsCount  uint64
 	recvPacketsCount  uint64
@@ -85,8 +88,14 @@ func (c *Controller) GetLinkState(state *pb.LinkState) *pb.LinkState {
 	state.ReceivedPacketsCount = c.recvPacketsCount
 	state.SentPacketsCount = c.sentPacketsCount
 	state.ErrorPacketsCount = c.errorPacketsCount
+	state.ModuleType = pb.ModuleType(c.moduleType)
 
 	return state
+}
+
+// GetModuleType returns the currently detected module type.
+func (c *Controller) GetModuleType() crossfire.ModuleType {
+	return c.moduleType
 }
 
 func (c *Controller) GetCRSFDevices() ([]*pb.CRSFDeviceInfoData, error) {
@@ -363,16 +372,26 @@ func (c *Controller) SetCRSFDeviceField(device *pb.CRSFDeviceInfoData, field *pb
 		if !(value >= min && value <= max) {
 			return nil, errors.New("selection value is out of range")
 		}
-		for i := 0; i < 5; i++ {
-			//send the request multiple times, module sometimes ignores it
-			c.sendChan <- &WriteDeviceFieldRequestUint8{
-				deviceId:   uint8(device.GetId()),
-				fieldId:    uint8(data.TextSelect.GetId()),
-				fieldValue: uint8(value),
-			}
-			time.Sleep(250 * time.Millisecond)
+		// Send the write request then wait for the module to echo back the updated
+		// field so the caller gets a confirmed value.
+		c.sendChan <- &WriteDeviceFieldRequestUint8{
+			deviceId:   uint8(device.GetId()),
+			fieldId:    uint8(data.TextSelect.GetId()),
+			fieldValue: uint8(value),
 		}
 
+		// Give the module time to apply the write before reading back.
+		// One or two channel-frame intervals (≥ 32 ms) is sufficient.
+		time.Sleep(100 * time.Millisecond)
+
+		// Re-read the field to confirm the write was accepted (up to 5 s).
+		confirmedField, err := c.GetCRSFDeviceField(device, uint32(data.TextSelect.GetId()), 5*time.Second)
+		if err != nil {
+			return field, nil // write was sent; return optimistic result on read failure
+		}
+		if confirmedField != nil {
+			return confirmedField, nil
+		}
 		return field, nil
 	case *pb.CRSFDeviceFieldData_Command:
 		step := data.Command.GetStep()

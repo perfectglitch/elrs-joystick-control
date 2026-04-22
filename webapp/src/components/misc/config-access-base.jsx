@@ -75,15 +75,10 @@ export const saveBackendConfigToFile = function (key, createConfigFunc) {
         throw new Error("Cannot export config with errors. Please fix errors first.");
     }
 
-    // Wrap in the expected backend format
-    let fileConfig = {
-        config: backendConfig
-    };
-
     let cDate = new Date();
     let fileName = `${key}-backend-` + cDate.getUTCFullYear() + "-" + String(cDate.getUTCMonth()).padStart(2, "0") + "-" + String(cDate.getUTCDate()).padStart(2, "0") + "T" + String(cDate.getUTCHours()).padStart(2, "0") + String(cDate.getUTCMinutes()).padStart(2, "0") + String(cDate.getUTCSeconds()).padStart(2, "0") + "Z" + ".json"
 
-    let blob = new Blob([JSON.stringify(fileConfig, null, 2)], {type: "text/plain;charset=utf-8"});
+    let blob = new Blob([JSON.stringify(backendConfig, null, 2)], {type: "text/plain;charset=utf-8"});
     saveAs(blob, fileName);
 }
 

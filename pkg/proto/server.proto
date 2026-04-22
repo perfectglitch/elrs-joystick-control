@@ -117,12 +117,20 @@ enum SupervisorState {
   SupervisorActive = 2;
 }
 
+// ModuleType identifies the connected TX module family.
+enum ModuleType {
+  ModuleTypeUnknown = 0;
+  ModuleTypeELRS = 1;
+  ModuleTypeCrossfire = 2;
+}
+
 message LinkState {
   SupervisorState supervisor_state = 1;
   PortState port_state = 2;
   uint64 received_packets_count = 3;
   uint64 sent_packets_count = 4;
   uint64 error_packets_count = 5;
+  ModuleType module_type = 6;
 }
 
 

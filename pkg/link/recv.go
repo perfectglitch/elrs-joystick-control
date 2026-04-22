@@ -123,6 +123,15 @@ Loop:
 			case telem.TelemDeviceInfoExtType:
 				//fmt.Printf("(recv-loop) %s\n", tFrame)
 				c.DeviceInfoBroadcaster.Broadcast(tFrame.Proto())
+				// Auto-detect module type the first time we see a device info frame
+				// originating from the TX module endpoint.
+				if tFrame.Src() == crossfire.ModuleEndpoint && c.moduleType == crossfire.ModuleTypeUnknown {
+					detected := crossfire.ClassifyModuleType(tFrame.DeviceName())
+					if detected != crossfire.ModuleTypeUnknown {
+						c.moduleType = detected
+						fmt.Printf("(recv-loop) detected module type: %v (%s)\n", detected, tFrame.DeviceName())
+					}
+				}
 			case telem.TelemDeviceSettingsEntryExtType:
 				//fmt.Printf("(recv-loop) %s\n", tFrame)
 				c.DeviceFieldBroadcaster.Broadcast(tFrame.Proto())

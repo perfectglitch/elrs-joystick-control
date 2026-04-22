@@ -44,7 +44,7 @@ func (c *Controller) StopSendLoop() error {
 //goland:noinspection GoUnusedParameter
 func (c *Controller) SendLoop(port *serial.Port, sendChan chan any, recvChan chan any) error {
 
-	currentRefreshRate := crsf.GetRefreshRate(port.BaudRate)
+	currentRefreshRate := crsf.GetRefreshRateForModule(port.BaudRate, c.moduleType)
 	nextRefreshRate := currentRefreshRate
 
 	fmt.Printf("(send-loop) starting, refresh rate %v\n", currentRefreshRate)
@@ -70,6 +70,10 @@ Loop:
 			//receive data from the recv loop
 			case ChannelRequest:
 				if data == SendModelId {
+					// Model ID command frame is ELRS-specific; skip for TBS Crossfire.
+					if c.moduleType == crsf.ModuleTypeCrossfire {
+						continue
+					}
 					fmt.Printf("(send-loop) writing model id frame\n")
 					if _, err = port.Write(crsf.CreateModelIDFrame(0)); err != nil {
 						c.errorPacketsCount += 1
@@ -79,7 +83,7 @@ Loop:
 					continue
 				} else if data == PingDevices {
 					fmt.Printf("(send-loop) pinging devices\n")
-					if _, err = port.Write(crsf.CreatePingDevicesFrame()); err != nil {
+					if _, err = port.Write(crsf.CreatePingDevicesFrameForModule(c.moduleType)); err != nil {
 						c.errorPacketsCount += 1
 						fmt.Printf("(send-loop) could not write ping devices frame on port %s. %s\n", port.Name, err.Error())
 						break
@@ -87,21 +91,21 @@ Loop:
 				}
 			case *ReadDeviceFieldsRequest:
 				//fmt.Printf("(send-loop) reading device fields (deviceId: %v)\n", data.deviceId)
-				if _, err = port.Write(crsf.CreateParameterSettingsReadFrame(data.deviceId, data.fieldId, data.fieldChunk)); err != nil {
+				if _, err = port.Write(crsf.CreateParameterSettingsReadFrameForModule(c.moduleType, data.deviceId, data.fieldId, data.fieldChunk)); err != nil {
 					c.errorPacketsCount += 1
 					fmt.Printf("(send-loop) could not write \"parameters-settings-read\" frame on port %s. %s\n", port.Name, err.Error())
 					break
 				}
 			case *WriteDeviceFieldRequestUint8:
 				fmt.Printf("(send-loop) setting device field (deviceId: %v, fieldId: %v, value(uint8): %v)\n", data.deviceId, data.fieldId, data.fieldValue)
-				if _, err = port.Write(crsf.CreateParameterSettingWriteFrameUint8(data.deviceId, data.fieldId, data.fieldValue)); err != nil {
+				if _, err = port.Write(crsf.CreateParameterSettingWriteFrameUint8ForModule(c.moduleType, data.deviceId, data.fieldId, data.fieldValue)); err != nil {
 					c.errorPacketsCount += 1
 					fmt.Printf("(send-loop) could not write \"parameters-settings-write-uint8\" frame on port %s. %s\n", port.Name, err.Error())
 					break
 				}
 			case *WriteDeviceFieldRequestUint16:
 				fmt.Printf("(send-loop) setting device field (deviceId: %v, fieldId: %v, value(uint16): %v)\n", data.deviceId, data.fieldId, data.fieldValue)
-				if _, err = port.Write(crsf.CreateParameterSettingWriteFrameUint16(data.deviceId, data.fieldId, data.fieldValue)); err != nil {
+				if _, err = port.Write(crsf.CreateParameterSettingWriteFrameUint16ForModule(c.moduleType, data.deviceId, data.fieldId, data.fieldValue)); err != nil {
 					c.errorPacketsCount += 1
 					fmt.Printf("(send-loop) could not write \"parameters-settings-write-uint16\" frame on port %s. %s\n", port.Name, err.Error())
 					break

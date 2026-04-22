@@ -4,10 +4,38 @@
 
 package crossfire
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type FrameType uint8
 type Endpoint uint8
+
+// ModuleType identifies whether the connected TX module is ELRS or TBS Crossfire.
+type ModuleType int32
+
+const (
+	// ModuleTypeUnknown is the default before a DeviceInfo frame is received.
+	ModuleTypeUnknown ModuleType = 0
+	// ModuleTypeELRS identifies ExpressLRS modules (use double CRC on extended frames).
+	ModuleTypeELRS ModuleType = 1
+	// ModuleTypeCrossfire identifies TBS Crossfire modules (single D5 CRC on extended frames).
+	ModuleTypeCrossfire ModuleType = 2
+)
+
+// ClassifyModuleType derives the ModuleType from the device name string returned
+// in a DeviceInfo frame. The comparison is case-insensitive.
+func ClassifyModuleType(deviceName string) ModuleType {
+	lower := strings.ToLower(deviceName)
+	if strings.Contains(lower, "elrs") || strings.Contains(lower, "expresslrs") {
+		return ModuleTypeELRS
+	}
+	if strings.Contains(lower, "crossfire") || strings.Contains(lower, "tbs") {
+		return ModuleTypeCrossfire
+	}
+	return ModuleTypeUnknown
+}
 
 //goland:noinspection GoUnusedConst
 const (

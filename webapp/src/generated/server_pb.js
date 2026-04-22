@@ -74,6 +74,7 @@ goog.exportSymbol('proto.JoystickControl.LinkState', null, global);
 goog.exportSymbol('proto.JoystickControl.LinkStatsData', null, global);
 goog.exportSymbol('proto.JoystickControl.LinkStatusFlag', null, global);
 goog.exportSymbol('proto.JoystickControl.LinkTXData', null, global);
+goog.exportSymbol('proto.JoystickControl.ModuleType', null, global);
 goog.exportSymbol('proto.JoystickControl.PortState', null, global);
 goog.exportSymbol('proto.JoystickControl.SetCRSFDeviceFieldReq', null, global);
 goog.exportSymbol('proto.JoystickControl.SetCRSFDeviceFieldRes', null, global);
@@ -4509,7 +4510,8 @@ proto.JoystickControl.LinkState.toObject = function(includeInstance, msg) {
     portState: jspb.Message.getFieldWithDefault(msg, 2, 0),
     receivedPacketsCount: jspb.Message.getFieldWithDefault(msg, 3, 0),
     sentPacketsCount: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    errorPacketsCount: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    errorPacketsCount: jspb.Message.getFieldWithDefault(msg, 5, 0),
+    moduleType: jspb.Message.getFieldWithDefault(msg, 6, 0)
   };
 
   if (includeInstance) {
@@ -4565,6 +4567,10 @@ proto.JoystickControl.LinkState.deserializeBinaryFromReader = function(msg, read
     case 5:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setErrorPacketsCount(value);
+      break;
+    case 6:
+      var value = /** @type {!proto.JoystickControl.ModuleType} */ (reader.readEnum());
+      msg.setModuleType(value);
       break;
     default:
       reader.skipField();
@@ -4627,6 +4633,13 @@ proto.JoystickControl.LinkState.serializeBinaryToWriter = function(message, writ
   if (f !== 0) {
     writer.writeUint64(
       5,
+      f
+    );
+  }
+  f = message.getModuleType();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      6,
       f
     );
   }
@@ -4720,6 +4733,24 @@ proto.JoystickControl.LinkState.prototype.getErrorPacketsCount = function() {
  */
 proto.JoystickControl.LinkState.prototype.setErrorPacketsCount = function(value) {
   return jspb.Message.setProto3IntField(this, 5, value);
+};
+
+
+/**
+ * optional ModuleType module_type = 6;
+ * @return {!proto.JoystickControl.ModuleType}
+ */
+proto.JoystickControl.LinkState.prototype.getModuleType = function() {
+  return /** @type {!proto.JoystickControl.ModuleType} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {!proto.JoystickControl.ModuleType} value
+ * @return {!proto.JoystickControl.LinkState} returns this
+ */
+proto.JoystickControl.LinkState.prototype.setModuleType = function(value) {
+  return jspb.Message.setProto3EnumField(this, 6, value);
 };
 
 
@@ -15768,6 +15799,15 @@ proto.JoystickControl.SupervisorState = {
   SUPERVISORUNKNOWN: 0,
   SUPERVISORINACTIVE: 1,
   SUPERVISORACTIVE: 2
+};
+
+/**
+ * @enum {number}
+ */
+proto.JoystickControl.ModuleType = {
+  MODULETYPEUNKNOWN: 0,
+  MODULETYPEELRS: 1,
+  MODULETYPECROSSFIRE: 2
 };
 
 /**

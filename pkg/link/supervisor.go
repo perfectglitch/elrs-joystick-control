@@ -47,6 +47,8 @@ func action(action string, err error) {
 func (c *Controller) SupervisorLoop(port string, baudRate int32) error {
 	fmt.Printf("(supervisor) starting, port: %s, baud: %v ...\n", port, baudRate)
 	c.supervisorState = SupervisorActive
+	// Reset module type each time the supervisor starts so detection runs fresh.
+	c.moduleType = crossfire.ModuleTypeUnknown
 
 	refreshRate := crossfire.GetRefreshRate(baudRate)
 	sport := &serial.Port{Name: port, BaudRate: baudRate, ReadTimeout: refreshRate * 4}

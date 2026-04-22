@@ -11,7 +11,11 @@ import (
 )
 
 func isTelemetryAddress(c crossfire.Endpoint) bool {
-	return c == crossfire.HandsetEndpoint || c == crossfire.ModuleEndpoint
+	// Only HandsetEndpoint (0xEA) is valid as the address byte of an incoming
+	// frame.  ModuleEndpoint (0xEE) is our own TX address and appears frequently
+	// inside telemetry payloads; treating it as a frame start causes spurious
+	// CRC-mismatch errors on every 0xEE data byte.
+	return c == crossfire.HandsetEndpoint
 }
 
 func BarometerAltitude(data []byte) float32 {

@@ -82,8 +82,9 @@ func CreateParameterSettingWriteFrameUint8(deviceId uint8, fieldId uint8, fieldV
 	return frame
 }
 
-// CreateParameterSettingWriteFrameUint16
-// not sure if this would work, ELRS seems to throw away the least-significant-byte of the fieldValue
+// CreateParameterSettingWriteFrameUint16 encodes a 16-bit value big-endian.
+// Note: ELRS firmware only acts on the most-significant byte for most parameters;
+// TBS Crossfire reads both bytes correctly.
 func CreateParameterSettingWriteFrameUint16(deviceId uint8, fieldId uint8, fieldValue uint16) []uint8 {
 	frame := []uint8{
 		/* 0: */ uint8(UartSyncFrame),
@@ -92,8 +93,8 @@ func CreateParameterSettingWriteFrameUint16(deviceId uint8, fieldId uint8, field
 		/* 3: */ deviceId,
 		/* 4: */ uint8(LuaEndpoint),
 		/* 5: */ fieldId,
-		/* 6: */ uint8((fieldValue >> 8) & 0x0F),
-		/* 7: */ uint8(fieldValue & 0x0F),
+		/* 6: */ uint8((fieldValue >> 8) & 0xFF),
+		/* 7: */ uint8(fieldValue & 0xFF),
 		/* 8: */ 0, //crc BA
 		/* 9: */ 0, //crc D5
 	}
@@ -114,6 +115,108 @@ func GetRefreshRate(baudRate int32) time.Duration {
 
 	//921600, 1870000, 3750000, 5250000
 	return MinRefreshRate
+}
+
+// GetRefreshRateForModule returns the appropriate send interval for the given baud
+// rate and module type.  TBS Crossfire runs at 150 Hz on the 400 kbps link
+// (≈6.67 ms), while ELRS uses 250 Hz (4 ms) at that baud rate.
+func GetRefreshRateForModule(baudRate int32, moduleType ModuleType) time.Duration {
+	if baudRate <= 115200 {
+		return 16 * 1000 * time.Microsecond
+	}
+
+	if baudRate <= 400000 {
+		if moduleType == ModuleTypeCrossfire {
+			return 6667 * time.Microsecond // 150 Hz
+		}
+		return 4 * 1000 * time.Microsecond // 250 Hz
+	}
+
+	return MinRefreshRate
+}
+
+// --- Module-type-aware extended frame builders ---
+// TBS Crossfire extended frames use a single D5 CRC (no preceding BA CRC).
+// ELRS extended frames use both a BA CRC and a D5 CRC.
+// The helpers below select the correct format automatically.
+
+// CreatePingDevicesFrameForModule creates a PingDevices frame with CRC encoding
+// appropriate for the detected module type.
+func CreatePingDevicesFrameForModule(moduleType ModuleType) []uint8 {
+	if moduleType == ModuleTypeCrossfire {
+		frame := []uint8{
+			/* 0: */ uint8(UartSyncFrame),
+			/* 1: */ 4,
+			/* 2: */ uint8(PingDevicesFrame),
+			/* 3: */ uint8(AllEndpoint),
+			/* 4: */ uint8(LuaEndpoint),
+			/* 5: */ 0, //crc D5
+		}
+		frame[5] = crc.D5(frame[2:5])
+		return frame
+	}
+	return CreatePingDevicesFrame()
+}
+
+// CreateParameterSettingsReadFrameForModule creates a ParameterSettingsRead frame
+// with CRC encoding appropriate for the detected module type.
+func CreateParameterSettingsReadFrameForModule(moduleType ModuleType, deviceId uint8, fieldId uint8, fieldChunk uint8) []uint8 {
+	if moduleType == ModuleTypeCrossfire {
+		frame := []uint8{
+			/* 0: */ uint8(UartSyncFrame),
+			/* 1: */ 6,
+			/* 2: */ uint8(ParameterSettingsReadFrame),
+			/* 3: */ deviceId,
+			/* 4: */ uint8(LuaEndpoint),
+			/* 5: */ fieldId,
+			/* 6: */ fieldChunk,
+			/* 7: */ 0, //crc D5
+		}
+		frame[7] = crc.D5(frame[2:7])
+		return frame
+	}
+	return CreateParameterSettingsReadFrame(deviceId, fieldId, fieldChunk)
+}
+
+// CreateParameterSettingWriteFrameUint8ForModule creates a ParameterSettingsWrite
+// (uint8) frame with CRC encoding appropriate for the detected module type.
+func CreateParameterSettingWriteFrameUint8ForModule(moduleType ModuleType, deviceId uint8, fieldId uint8, fieldValue uint8) []uint8 {
+	if moduleType == ModuleTypeCrossfire {
+		frame := []uint8{
+			/* 0: */ uint8(UartSyncFrame),
+			/* 1: */ 6,
+			/* 2: */ uint8(ParameterSettingsWriteFrame),
+			/* 3: */ deviceId,
+			/* 4: */ uint8(LuaEndpoint),
+			/* 5: */ fieldId,
+			/* 6: */ fieldValue,
+			/* 7: */ 0, //crc D5
+		}
+		frame[7] = crc.D5(frame[2:7])
+		return frame
+	}
+	return CreateParameterSettingWriteFrameUint8(deviceId, fieldId, fieldValue)
+}
+
+// CreateParameterSettingWriteFrameUint16ForModule creates a ParameterSettingsWrite
+// (uint16, big-endian) frame with CRC encoding appropriate for the detected module type.
+func CreateParameterSettingWriteFrameUint16ForModule(moduleType ModuleType, deviceId uint8, fieldId uint8, fieldValue uint16) []uint8 {
+	if moduleType == ModuleTypeCrossfire {
+		frame := []uint8{
+			/* 0: */ uint8(UartSyncFrame),
+			/* 1: */ 7,
+			/* 2: */ uint8(ParameterSettingsWriteFrame),
+			/* 3: */ deviceId,
+			/* 4: */ uint8(LuaEndpoint),
+			/* 5: */ fieldId,
+			/* 6: */ uint8((fieldValue >> 8) & 0xFF),
+			/* 7: */ uint8(fieldValue & 0xFF),
+			/* 8: */ 0, //crc D5
+		}
+		frame[8] = crc.D5(frame[2:8])
+		return frame
+	}
+	return CreateParameterSettingWriteFrameUint16(deviceId, fieldId, fieldValue)
 }
 
 func PackChannels(channels *[16]util.CRSFValue) (result []byte) {

@@ -167,8 +167,10 @@ func Split(data []byte, atEOF bool) (advance int, token *[]byte, err error) {
 	computedCrc8 := crc.D5(frame[2 : len(frame)-1])
 	//fmt.Printf("computedCrc8: %x\n", computedCrc8)
 	if computedCrc8 != frameCrc8 {
-		//bad frame detect at frameStart, skip this byte
-		return int(frameStart) + 1, nil, errors.New("frame crc mismatch")
+		// CRC mismatch: this byte is not the start of a valid frame (or the frame
+		// was corrupted by a TX/RX collision on a half-duplex single-wire setup).
+		// Skip this byte and let the caller try the next position — not a fatal error.
+		return int(frameStart) + 1, nil, nil
 	}
 
 	skip := frameStart + int32(len(frame))

@@ -170,6 +170,56 @@ func (SupervisorState) EnumDescriptor() ([]byte, []int) {
 	return file_server_proto_rawDescGZIP(), []int{2}
 }
 
+// ModuleType identifies the connected TX module family.
+type ModuleType int32
+
+const (
+	ModuleType_ModuleTypeUnknown   ModuleType = 0
+	ModuleType_ModuleTypeELRS      ModuleType = 1
+	ModuleType_ModuleTypeCrossfire ModuleType = 2
+)
+
+// Enum value maps for ModuleType.
+var (
+	ModuleType_name = map[int32]string{
+		0: "ModuleTypeUnknown",
+		1: "ModuleTypeELRS",
+		2: "ModuleTypeCrossfire",
+	}
+	ModuleType_value = map[string]int32{
+		"ModuleTypeUnknown":   0,
+		"ModuleTypeELRS":      1,
+		"ModuleTypeCrossfire": 2,
+	}
+)
+
+func (x ModuleType) Enum() *ModuleType {
+	p := new(ModuleType)
+	*p = x
+	return p
+}
+
+func (x ModuleType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ModuleType) Descriptor() protoreflect.EnumDescriptor {
+	return file_server_proto_enumTypes[3].Descriptor()
+}
+
+func (ModuleType) Type() protoreflect.EnumType {
+	return &file_server_proto_enumTypes[3]
+}
+
+func (x ModuleType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ModuleType.Descriptor instead.
+func (ModuleType) EnumDescriptor() ([]byte, []int) {
+	return file_server_proto_rawDescGZIP(), []int{3}
+}
+
 type CRSFDeviceFieldType int32
 
 const (
@@ -245,11 +295,11 @@ func (x CRSFDeviceFieldType) String() string {
 }
 
 func (CRSFDeviceFieldType) Descriptor() protoreflect.EnumDescriptor {
-	return file_server_proto_enumTypes[3].Descriptor()
+	return file_server_proto_enumTypes[4].Descriptor()
 }
 
 func (CRSFDeviceFieldType) Type() protoreflect.EnumType {
-	return &file_server_proto_enumTypes[3]
+	return &file_server_proto_enumTypes[4]
 }
 
 func (x CRSFDeviceFieldType) Number() protoreflect.EnumNumber {
@@ -258,7 +308,7 @@ func (x CRSFDeviceFieldType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CRSFDeviceFieldType.Descriptor instead.
 func (CRSFDeviceFieldType) EnumDescriptor() ([]byte, []int) {
-	return file_server_proto_rawDescGZIP(), []int{3}
+	return file_server_proto_rawDescGZIP(), []int{4}
 }
 
 type CRSFDeviceFieldCommandStep int32
@@ -306,11 +356,11 @@ func (x CRSFDeviceFieldCommandStep) String() string {
 }
 
 func (CRSFDeviceFieldCommandStep) Descriptor() protoreflect.EnumDescriptor {
-	return file_server_proto_enumTypes[4].Descriptor()
+	return file_server_proto_enumTypes[5].Descriptor()
 }
 
 func (CRSFDeviceFieldCommandStep) Type() protoreflect.EnumType {
-	return &file_server_proto_enumTypes[4]
+	return &file_server_proto_enumTypes[5]
 }
 
 func (x CRSFDeviceFieldCommandStep) Number() protoreflect.EnumNumber {
@@ -319,7 +369,7 @@ func (x CRSFDeviceFieldCommandStep) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CRSFDeviceFieldCommandStep.Descriptor instead.
 func (CRSFDeviceFieldCommandStep) EnumDescriptor() ([]byte, []int) {
-	return file_server_proto_rawDescGZIP(), []int{4}
+	return file_server_proto_rawDescGZIP(), []int{5}
 }
 
 type LinkStatusFlag int32
@@ -370,11 +420,11 @@ func (x LinkStatusFlag) String() string {
 }
 
 func (LinkStatusFlag) Descriptor() protoreflect.EnumDescriptor {
-	return file_server_proto_enumTypes[5].Descriptor()
+	return file_server_proto_enumTypes[6].Descriptor()
 }
 
 func (LinkStatusFlag) Type() protoreflect.EnumType {
-	return &file_server_proto_enumTypes[5]
+	return &file_server_proto_enumTypes[6]
 }
 
 func (x LinkStatusFlag) Number() protoreflect.EnumNumber {
@@ -383,7 +433,7 @@ func (x LinkStatusFlag) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use LinkStatusFlag.Descriptor instead.
 func (LinkStatusFlag) EnumDescriptor() ([]byte, []int) {
-	return file_server_proto_rawDescGZIP(), []int{5}
+	return file_server_proto_rawDescGZIP(), []int{6}
 }
 
 type Empty struct {
@@ -1325,6 +1375,7 @@ type LinkState struct {
 	ReceivedPacketsCount uint64                 `protobuf:"varint,3,opt,name=received_packets_count,json=receivedPacketsCount,proto3" json:"received_packets_count,omitempty"`
 	SentPacketsCount     uint64                 `protobuf:"varint,4,opt,name=sent_packets_count,json=sentPacketsCount,proto3" json:"sent_packets_count,omitempty"`
 	ErrorPacketsCount    uint64                 `protobuf:"varint,5,opt,name=error_packets_count,json=errorPacketsCount,proto3" json:"error_packets_count,omitempty"`
+	ModuleType           ModuleType             `protobuf:"varint,6,opt,name=module_type,json=moduleType,proto3,enum=JoystickControl.ModuleType" json:"module_type,omitempty"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -1392,6 +1443,13 @@ func (x *LinkState) GetErrorPacketsCount() uint64 {
 		return x.ErrorPacketsCount
 	}
 	return 0
+}
+
+func (x *LinkState) GetModuleType() ModuleType {
+	if x != nil {
+		return x.ModuleType
+	}
+	return ModuleType_ModuleTypeUnknown
 }
 
 type Telemetry struct {
@@ -4756,14 +4814,16 @@ const file_server_proto_rawDesc = "" +
 	"\x06states\x18\x01 \x03(\v2'.JoystickControl.EvalStates.StatesEntryR\x06states\x1aU\n" +
 	"\vStatesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x120\n" +
-	"\x05value\x18\x02 \x01(\v2\x1a.JoystickControl.EvalStateR\x05value:\x028\x01\"\xa7\x02\n" +
+	"\x05value\x18\x02 \x01(\v2\x1a.JoystickControl.EvalStateR\x05value:\x028\x01\"\xe5\x02\n" +
 	"\tLinkState\x12K\n" +
 	"\x10supervisor_state\x18\x01 \x01(\x0e2 .JoystickControl.SupervisorStateR\x0fsupervisorState\x129\n" +
 	"\n" +
 	"port_state\x18\x02 \x01(\x0e2\x1a.JoystickControl.PortStateR\tportState\x124\n" +
 	"\x16received_packets_count\x18\x03 \x01(\x04R\x14receivedPacketsCount\x12,\n" +
 	"\x12sent_packets_count\x18\x04 \x01(\x04R\x10sentPacketsCount\x12.\n" +
-	"\x13error_packets_count\x18\x05 \x01(\x04R\x11errorPacketsCount\"\x89\b\n" +
+	"\x13error_packets_count\x18\x05 \x01(\x04R\x11errorPacketsCount\x12<\n" +
+	"\vmodule_type\x18\x06 \x01(\x0e2\x1b.JoystickControl.ModuleTypeR\n" +
+	"moduleType\"\x89\b\n" +
 	"\tTelemetry\x12?\n" +
 	"\n" +
 	"link_stats\x18\x01 \x01(\v2\x1e.JoystickControl.LinkStatsDataH\x00R\tlinkStats\x12;\n" +
@@ -5043,7 +5103,12 @@ const file_server_proto_rawDesc = "" +
 	"\x0fSupervisorState\x12\x15\n" +
 	"\x11SupervisorUnknown\x10\x00\x12\x16\n" +
 	"\x12SupervisorInactive\x10\x01\x12\x14\n" +
-	"\x10SupervisorActive\x10\x02*\xe1\x01\n" +
+	"\x10SupervisorActive\x10\x02*P\n" +
+	"\n" +
+	"ModuleType\x12\x15\n" +
+	"\x11ModuleTypeUnknown\x10\x00\x12\x12\n" +
+	"\x0eModuleTypeELRS\x10\x01\x12\x17\n" +
+	"\x13ModuleTypeCrossfire\x10\x02*\xe1\x01\n" +
 	"\x13CRSFDeviceFieldType\x12\t\n" +
 	"\x05UINT8\x10\x00\x12\b\n" +
 	"\x04INT8\x10\x01\x12\n" +
@@ -5123,195 +5188,197 @@ func file_server_proto_rawDescGZIP() []byte {
 	return file_server_proto_rawDescData
 }
 
-var file_server_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
+var file_server_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
 var file_server_proto_msgTypes = make([]protoimpl.MessageInfo, 60)
 var file_server_proto_goTypes = []any{
 	(GamepadInputType)(0),              // 0: JoystickControl.GamepadInputType
 	(PortState)(0),                     // 1: JoystickControl.PortState
 	(SupervisorState)(0),               // 2: JoystickControl.SupervisorState
-	(CRSFDeviceFieldType)(0),           // 3: JoystickControl.CRSFDeviceFieldType
-	(CRSFDeviceFieldCommandStep)(0),    // 4: JoystickControl.CRSFDeviceFieldCommandStep
-	(LinkStatusFlag)(0),                // 5: JoystickControl.LinkStatusFlag
-	(*Empty)(nil),                      // 6: JoystickControl.Empty
-	(*ValidationError)(nil),            // 7: JoystickControl.ValidationError
-	(*GetTransmitterRes)(nil),          // 8: JoystickControl.GetTransmitterRes
-	(*Transmitter)(nil),                // 9: JoystickControl.Transmitter
-	(*ValidationErrors)(nil),           // 10: JoystickControl.ValidationErrors
-	(*GetGamepadsRes)(nil),             // 11: JoystickControl.GetGamepadsRes
-	(*Gamepad)(nil),                    // 12: JoystickControl.Gamepad
-	(*GetConfigRes)(nil),               // 13: JoystickControl.GetConfigRes
-	(*SetConfigReq)(nil),               // 14: JoystickControl.SetConfigReq
-	(*ValidateConfigRes)(nil),          // 15: JoystickControl.ValidateConfigRes
-	(*StartLinkReq)(nil),               // 16: JoystickControl.StartLinkReq
-	(*GetGamepadStreamReq)(nil),        // 17: JoystickControl.GetGamepadStreamReq
-	(*GamepadInputState)(nil),          // 18: JoystickControl.GamepadInputState
-	(*GamepadInputsStates)(nil),        // 19: JoystickControl.GamepadInputsStates
-	(*GetTransmitterStreamReq)(nil),    // 20: JoystickControl.GetTransmitterStreamReq
-	(*TransmitterChannels)(nil),        // 21: JoystickControl.TransmitterChannels
-	(*TransmitterChannel)(nil),         // 22: JoystickControl.TransmitterChannel
-	(*EvalState)(nil),                  // 23: JoystickControl.EvalState
-	(*EvalStates)(nil),                 // 24: JoystickControl.EvalStates
-	(*LinkState)(nil),                  // 25: JoystickControl.LinkState
-	(*Telemetry)(nil),                  // 26: JoystickControl.Telemetry
-	(*CRSFDeviceLinkStatusData)(nil),   // 27: JoystickControl.CRSFDeviceLinkStatusData
-	(*CRSFDeviceFieldEntryData)(nil),   // 28: JoystickControl.CRSFDeviceFieldEntryData
-	(*CRSFDeviceInfoData)(nil),         // 29: JoystickControl.CRSFDeviceInfoData
-	(*BarometerData)(nil),              // 30: JoystickControl.BarometerData
-	(*VariometerData)(nil),             // 31: JoystickControl.VariometerData
-	(*BarometerVariometerData)(nil),    // 32: JoystickControl.BarometerVariometerData
-	(*FlightModeData)(nil),             // 33: JoystickControl.FlightModeData
-	(*LinkTXData)(nil),                 // 34: JoystickControl.LinkTXData
-	(*LinkRXData)(nil),                 // 35: JoystickControl.LinkRXData
-	(*SyncData)(nil),                   // 36: JoystickControl.SyncData
-	(*AttitudeData)(nil),               // 37: JoystickControl.AttitudeData
-	(*LinkStatsData)(nil),              // 38: JoystickControl.LinkStatsData
-	(*GPSData)(nil),                    // 39: JoystickControl.GPSData
-	(*BatteryData)(nil),                // 40: JoystickControl.BatteryData
-	(*GetAppInfoRes)(nil),              // 41: JoystickControl.GetAppInfoRes
-	(*GetCRSFDevicesRes)(nil),          // 42: JoystickControl.GetCRSFDevicesRes
-	(*GetCRSFDeviceFieldsRes)(nil),     // 43: JoystickControl.GetCRSFDeviceFieldsRes
-	(*CRSFDeviceFieldData)(nil),        // 44: JoystickControl.CRSFDeviceFieldData
-	(*CRSFDeviceFieldUint8)(nil),       // 45: JoystickControl.CRSFDeviceFieldUint8
-	(*CRSFDeviceFieldInt8)(nil),        // 46: JoystickControl.CRSFDeviceFieldInt8
-	(*CRSFDeviceFieldUint16)(nil),      // 47: JoystickControl.CRSFDeviceFieldUint16
-	(*CRSFDeviceFieldInt16)(nil),       // 48: JoystickControl.CRSFDeviceFieldInt16
-	(*CRSFDeviceFieldUint32)(nil),      // 49: JoystickControl.CRSFDeviceFieldUint32
-	(*CRSFDeviceFieldInt32)(nil),       // 50: JoystickControl.CRSFDeviceFieldInt32
-	(*CRSFDeviceFieldUint64)(nil),      // 51: JoystickControl.CRSFDeviceFieldUint64
-	(*CRSFDeviceFieldInt64)(nil),       // 52: JoystickControl.CRSFDeviceFieldInt64
-	(*CRSFDeviceFieldFloat)(nil),       // 53: JoystickControl.CRSFDeviceFieldFloat
-	(*CRSFDeviceFieldInfo)(nil),        // 54: JoystickControl.CRSFDeviceFieldInfo
-	(*CRSFDeviceFieldString)(nil),      // 55: JoystickControl.CRSFDeviceFieldString
-	(*CRSFDeviceFieldFolder)(nil),      // 56: JoystickControl.CRSFDeviceFieldFolder
-	(*CRSFDeviceFieldCommand)(nil),     // 57: JoystickControl.CRSFDeviceFieldCommand
-	(*CRSFDeviceFieldTextSelect)(nil),  // 58: JoystickControl.CRSFDeviceFieldTextSelect
-	(*GetCRSFDeviceFieldReq)(nil),      // 59: JoystickControl.GetCRSFDeviceFieldReq
-	(*GetCRSFDeviceFieldsReq)(nil),     // 60: JoystickControl.GetCRSFDeviceFieldsReq
-	(*GetCRSFDeviceFieldRes)(nil),      // 61: JoystickControl.GetCRSFDeviceFieldRes
-	(*SetCRSFDeviceFieldReq)(nil),      // 62: JoystickControl.SetCRSFDeviceFieldReq
-	(*SetCRSFDeviceFieldRes)(nil),      // 63: JoystickControl.SetCRSFDeviceFieldRes
-	(*GetCRSFDeviceLinkStatusRes)(nil), // 64: JoystickControl.GetCRSFDeviceLinkStatusRes
-	nil,                                // 65: JoystickControl.EvalStates.StatesEntry
-	(*structpb.Struct)(nil),            // 66: google.protobuf.Struct
+	(ModuleType)(0),                    // 3: JoystickControl.ModuleType
+	(CRSFDeviceFieldType)(0),           // 4: JoystickControl.CRSFDeviceFieldType
+	(CRSFDeviceFieldCommandStep)(0),    // 5: JoystickControl.CRSFDeviceFieldCommandStep
+	(LinkStatusFlag)(0),                // 6: JoystickControl.LinkStatusFlag
+	(*Empty)(nil),                      // 7: JoystickControl.Empty
+	(*ValidationError)(nil),            // 8: JoystickControl.ValidationError
+	(*GetTransmitterRes)(nil),          // 9: JoystickControl.GetTransmitterRes
+	(*Transmitter)(nil),                // 10: JoystickControl.Transmitter
+	(*ValidationErrors)(nil),           // 11: JoystickControl.ValidationErrors
+	(*GetGamepadsRes)(nil),             // 12: JoystickControl.GetGamepadsRes
+	(*Gamepad)(nil),                    // 13: JoystickControl.Gamepad
+	(*GetConfigRes)(nil),               // 14: JoystickControl.GetConfigRes
+	(*SetConfigReq)(nil),               // 15: JoystickControl.SetConfigReq
+	(*ValidateConfigRes)(nil),          // 16: JoystickControl.ValidateConfigRes
+	(*StartLinkReq)(nil),               // 17: JoystickControl.StartLinkReq
+	(*GetGamepadStreamReq)(nil),        // 18: JoystickControl.GetGamepadStreamReq
+	(*GamepadInputState)(nil),          // 19: JoystickControl.GamepadInputState
+	(*GamepadInputsStates)(nil),        // 20: JoystickControl.GamepadInputsStates
+	(*GetTransmitterStreamReq)(nil),    // 21: JoystickControl.GetTransmitterStreamReq
+	(*TransmitterChannels)(nil),        // 22: JoystickControl.TransmitterChannels
+	(*TransmitterChannel)(nil),         // 23: JoystickControl.TransmitterChannel
+	(*EvalState)(nil),                  // 24: JoystickControl.EvalState
+	(*EvalStates)(nil),                 // 25: JoystickControl.EvalStates
+	(*LinkState)(nil),                  // 26: JoystickControl.LinkState
+	(*Telemetry)(nil),                  // 27: JoystickControl.Telemetry
+	(*CRSFDeviceLinkStatusData)(nil),   // 28: JoystickControl.CRSFDeviceLinkStatusData
+	(*CRSFDeviceFieldEntryData)(nil),   // 29: JoystickControl.CRSFDeviceFieldEntryData
+	(*CRSFDeviceInfoData)(nil),         // 30: JoystickControl.CRSFDeviceInfoData
+	(*BarometerData)(nil),              // 31: JoystickControl.BarometerData
+	(*VariometerData)(nil),             // 32: JoystickControl.VariometerData
+	(*BarometerVariometerData)(nil),    // 33: JoystickControl.BarometerVariometerData
+	(*FlightModeData)(nil),             // 34: JoystickControl.FlightModeData
+	(*LinkTXData)(nil),                 // 35: JoystickControl.LinkTXData
+	(*LinkRXData)(nil),                 // 36: JoystickControl.LinkRXData
+	(*SyncData)(nil),                   // 37: JoystickControl.SyncData
+	(*AttitudeData)(nil),               // 38: JoystickControl.AttitudeData
+	(*LinkStatsData)(nil),              // 39: JoystickControl.LinkStatsData
+	(*GPSData)(nil),                    // 40: JoystickControl.GPSData
+	(*BatteryData)(nil),                // 41: JoystickControl.BatteryData
+	(*GetAppInfoRes)(nil),              // 42: JoystickControl.GetAppInfoRes
+	(*GetCRSFDevicesRes)(nil),          // 43: JoystickControl.GetCRSFDevicesRes
+	(*GetCRSFDeviceFieldsRes)(nil),     // 44: JoystickControl.GetCRSFDeviceFieldsRes
+	(*CRSFDeviceFieldData)(nil),        // 45: JoystickControl.CRSFDeviceFieldData
+	(*CRSFDeviceFieldUint8)(nil),       // 46: JoystickControl.CRSFDeviceFieldUint8
+	(*CRSFDeviceFieldInt8)(nil),        // 47: JoystickControl.CRSFDeviceFieldInt8
+	(*CRSFDeviceFieldUint16)(nil),      // 48: JoystickControl.CRSFDeviceFieldUint16
+	(*CRSFDeviceFieldInt16)(nil),       // 49: JoystickControl.CRSFDeviceFieldInt16
+	(*CRSFDeviceFieldUint32)(nil),      // 50: JoystickControl.CRSFDeviceFieldUint32
+	(*CRSFDeviceFieldInt32)(nil),       // 51: JoystickControl.CRSFDeviceFieldInt32
+	(*CRSFDeviceFieldUint64)(nil),      // 52: JoystickControl.CRSFDeviceFieldUint64
+	(*CRSFDeviceFieldInt64)(nil),       // 53: JoystickControl.CRSFDeviceFieldInt64
+	(*CRSFDeviceFieldFloat)(nil),       // 54: JoystickControl.CRSFDeviceFieldFloat
+	(*CRSFDeviceFieldInfo)(nil),        // 55: JoystickControl.CRSFDeviceFieldInfo
+	(*CRSFDeviceFieldString)(nil),      // 56: JoystickControl.CRSFDeviceFieldString
+	(*CRSFDeviceFieldFolder)(nil),      // 57: JoystickControl.CRSFDeviceFieldFolder
+	(*CRSFDeviceFieldCommand)(nil),     // 58: JoystickControl.CRSFDeviceFieldCommand
+	(*CRSFDeviceFieldTextSelect)(nil),  // 59: JoystickControl.CRSFDeviceFieldTextSelect
+	(*GetCRSFDeviceFieldReq)(nil),      // 60: JoystickControl.GetCRSFDeviceFieldReq
+	(*GetCRSFDeviceFieldsReq)(nil),     // 61: JoystickControl.GetCRSFDeviceFieldsReq
+	(*GetCRSFDeviceFieldRes)(nil),      // 62: JoystickControl.GetCRSFDeviceFieldRes
+	(*SetCRSFDeviceFieldReq)(nil),      // 63: JoystickControl.SetCRSFDeviceFieldReq
+	(*SetCRSFDeviceFieldRes)(nil),      // 64: JoystickControl.SetCRSFDeviceFieldRes
+	(*GetCRSFDeviceLinkStatusRes)(nil), // 65: JoystickControl.GetCRSFDeviceLinkStatusRes
+	nil,                                // 66: JoystickControl.EvalStates.StatesEntry
+	(*structpb.Struct)(nil),            // 67: google.protobuf.Struct
 }
 var file_server_proto_depIdxs = []int32{
-	7,  // 0: JoystickControl.ValidationError.causes:type_name -> JoystickControl.ValidationError
-	9,  // 1: JoystickControl.GetTransmitterRes.transmitters:type_name -> JoystickControl.Transmitter
-	7,  // 2: JoystickControl.ValidationErrors.errors:type_name -> JoystickControl.ValidationError
-	12, // 3: JoystickControl.GetGamepadsRes.gamepads:type_name -> JoystickControl.Gamepad
-	66, // 4: JoystickControl.GetConfigRes.config:type_name -> google.protobuf.Struct
-	66, // 5: JoystickControl.SetConfigReq.config:type_name -> google.protobuf.Struct
-	12, // 6: JoystickControl.GetGamepadStreamReq.gamepad:type_name -> JoystickControl.Gamepad
+	8,  // 0: JoystickControl.ValidationError.causes:type_name -> JoystickControl.ValidationError
+	10, // 1: JoystickControl.GetTransmitterRes.transmitters:type_name -> JoystickControl.Transmitter
+	8,  // 2: JoystickControl.ValidationErrors.errors:type_name -> JoystickControl.ValidationError
+	13, // 3: JoystickControl.GetGamepadsRes.gamepads:type_name -> JoystickControl.Gamepad
+	67, // 4: JoystickControl.GetConfigRes.config:type_name -> google.protobuf.Struct
+	67, // 5: JoystickControl.SetConfigReq.config:type_name -> google.protobuf.Struct
+	13, // 6: JoystickControl.GetGamepadStreamReq.gamepad:type_name -> JoystickControl.Gamepad
 	0,  // 7: JoystickControl.GamepadInputState.type:type_name -> JoystickControl.GamepadInputType
-	18, // 8: JoystickControl.GamepadInputsStates.inputs_states:type_name -> JoystickControl.GamepadInputState
-	9,  // 9: JoystickControl.GetTransmitterStreamReq.transmitter:type_name -> JoystickControl.Transmitter
-	22, // 10: JoystickControl.TransmitterChannels.channels:type_name -> JoystickControl.TransmitterChannel
-	65, // 11: JoystickControl.EvalStates.states:type_name -> JoystickControl.EvalStates.StatesEntry
+	19, // 8: JoystickControl.GamepadInputsStates.inputs_states:type_name -> JoystickControl.GamepadInputState
+	10, // 9: JoystickControl.GetTransmitterStreamReq.transmitter:type_name -> JoystickControl.Transmitter
+	23, // 10: JoystickControl.TransmitterChannels.channels:type_name -> JoystickControl.TransmitterChannel
+	66, // 11: JoystickControl.EvalStates.states:type_name -> JoystickControl.EvalStates.StatesEntry
 	2,  // 12: JoystickControl.LinkState.supervisor_state:type_name -> JoystickControl.SupervisorState
 	1,  // 13: JoystickControl.LinkState.port_state:type_name -> JoystickControl.PortState
-	38, // 14: JoystickControl.Telemetry.link_stats:type_name -> JoystickControl.LinkStatsData
-	37, // 15: JoystickControl.Telemetry.attitude:type_name -> JoystickControl.AttitudeData
-	40, // 16: JoystickControl.Telemetry.battery:type_name -> JoystickControl.BatteryData
-	39, // 17: JoystickControl.Telemetry.gps:type_name -> JoystickControl.GPSData
-	33, // 18: JoystickControl.Telemetry.flight_mode:type_name -> JoystickControl.FlightModeData
-	36, // 19: JoystickControl.Telemetry.sync:type_name -> JoystickControl.SyncData
-	34, // 20: JoystickControl.Telemetry.link_tx:type_name -> JoystickControl.LinkTXData
-	35, // 21: JoystickControl.Telemetry.link_rx:type_name -> JoystickControl.LinkRXData
-	30, // 22: JoystickControl.Telemetry.barometer:type_name -> JoystickControl.BarometerData
-	31, // 23: JoystickControl.Telemetry.variometer:type_name -> JoystickControl.VariometerData
-	32, // 24: JoystickControl.Telemetry.barometer_variometer:type_name -> JoystickControl.BarometerVariometerData
-	29, // 25: JoystickControl.Telemetry.device_info:type_name -> JoystickControl.CRSFDeviceInfoData
-	28, // 26: JoystickControl.Telemetry.device_field_entry:type_name -> JoystickControl.CRSFDeviceFieldEntryData
-	44, // 27: JoystickControl.Telemetry.device_field:type_name -> JoystickControl.CRSFDeviceFieldData
-	27, // 28: JoystickControl.Telemetry.device_link_status:type_name -> JoystickControl.CRSFDeviceLinkStatusData
-	5,  // 29: JoystickControl.CRSFDeviceLinkStatusData.flags:type_name -> JoystickControl.LinkStatusFlag
-	3,  // 30: JoystickControl.CRSFDeviceFieldEntryData.data_type:type_name -> JoystickControl.CRSFDeviceFieldType
-	29, // 31: JoystickControl.GetCRSFDevicesRes.devices:type_name -> JoystickControl.CRSFDeviceInfoData
-	44, // 32: JoystickControl.GetCRSFDeviceFieldsRes.fields:type_name -> JoystickControl.CRSFDeviceFieldData
-	45, // 33: JoystickControl.CRSFDeviceFieldData.uint8:type_name -> JoystickControl.CRSFDeviceFieldUint8
-	46, // 34: JoystickControl.CRSFDeviceFieldData.int8:type_name -> JoystickControl.CRSFDeviceFieldInt8
-	47, // 35: JoystickControl.CRSFDeviceFieldData.uint16:type_name -> JoystickControl.CRSFDeviceFieldUint16
-	48, // 36: JoystickControl.CRSFDeviceFieldData.int16:type_name -> JoystickControl.CRSFDeviceFieldInt16
-	49, // 37: JoystickControl.CRSFDeviceFieldData.uint32:type_name -> JoystickControl.CRSFDeviceFieldUint32
-	50, // 38: JoystickControl.CRSFDeviceFieldData.int32:type_name -> JoystickControl.CRSFDeviceFieldInt32
-	51, // 39: JoystickControl.CRSFDeviceFieldData.uint64:type_name -> JoystickControl.CRSFDeviceFieldUint64
-	52, // 40: JoystickControl.CRSFDeviceFieldData.int64:type_name -> JoystickControl.CRSFDeviceFieldInt64
-	53, // 41: JoystickControl.CRSFDeviceFieldData.float:type_name -> JoystickControl.CRSFDeviceFieldFloat
-	58, // 42: JoystickControl.CRSFDeviceFieldData.text_select:type_name -> JoystickControl.CRSFDeviceFieldTextSelect
-	55, // 43: JoystickControl.CRSFDeviceFieldData.string:type_name -> JoystickControl.CRSFDeviceFieldString
-	56, // 44: JoystickControl.CRSFDeviceFieldData.folder:type_name -> JoystickControl.CRSFDeviceFieldFolder
-	54, // 45: JoystickControl.CRSFDeviceFieldData.info:type_name -> JoystickControl.CRSFDeviceFieldInfo
-	57, // 46: JoystickControl.CRSFDeviceFieldData.command:type_name -> JoystickControl.CRSFDeviceFieldCommand
-	3,  // 47: JoystickControl.CRSFDeviceFieldUint8.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 48: JoystickControl.CRSFDeviceFieldInt8.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 49: JoystickControl.CRSFDeviceFieldUint16.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 50: JoystickControl.CRSFDeviceFieldInt16.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 51: JoystickControl.CRSFDeviceFieldUint32.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 52: JoystickControl.CRSFDeviceFieldInt32.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 53: JoystickControl.CRSFDeviceFieldUint64.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 54: JoystickControl.CRSFDeviceFieldInt64.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 55: JoystickControl.CRSFDeviceFieldFloat.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 56: JoystickControl.CRSFDeviceFieldInfo.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 57: JoystickControl.CRSFDeviceFieldString.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 58: JoystickControl.CRSFDeviceFieldFolder.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	3,  // 59: JoystickControl.CRSFDeviceFieldCommand.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	4,  // 60: JoystickControl.CRSFDeviceFieldCommand.step:type_name -> JoystickControl.CRSFDeviceFieldCommandStep
-	3,  // 61: JoystickControl.CRSFDeviceFieldTextSelect.type:type_name -> JoystickControl.CRSFDeviceFieldType
-	29, // 62: JoystickControl.GetCRSFDeviceFieldReq.device:type_name -> JoystickControl.CRSFDeviceInfoData
-	29, // 63: JoystickControl.GetCRSFDeviceFieldsReq.device:type_name -> JoystickControl.CRSFDeviceInfoData
-	44, // 64: JoystickControl.GetCRSFDeviceFieldRes.field:type_name -> JoystickControl.CRSFDeviceFieldData
-	29, // 65: JoystickControl.SetCRSFDeviceFieldReq.device:type_name -> JoystickControl.CRSFDeviceInfoData
-	44, // 66: JoystickControl.SetCRSFDeviceFieldReq.field:type_name -> JoystickControl.CRSFDeviceFieldData
-	44, // 67: JoystickControl.SetCRSFDeviceFieldRes.field:type_name -> JoystickControl.CRSFDeviceFieldData
-	27, // 68: JoystickControl.GetCRSFDeviceLinkStatusRes.link_status:type_name -> JoystickControl.CRSFDeviceLinkStatusData
-	23, // 69: JoystickControl.EvalStates.StatesEntry.value:type_name -> JoystickControl.EvalState
-	6,  // 70: JoystickControl.JoystickControl.getGamepads:input_type -> JoystickControl.Empty
-	6,  // 71: JoystickControl.JoystickControl.getTransmitters:input_type -> JoystickControl.Empty
-	6,  // 72: JoystickControl.JoystickControl.getConfig:input_type -> JoystickControl.Empty
-	14, // 73: JoystickControl.JoystickControl.setConfig:input_type -> JoystickControl.SetConfigReq
-	6,  // 74: JoystickControl.JoystickControl.validateConfig:input_type -> JoystickControl.Empty
-	16, // 75: JoystickControl.JoystickControl.startLink:input_type -> JoystickControl.StartLinkReq
-	6,  // 76: JoystickControl.JoystickControl.stopLink:input_type -> JoystickControl.Empty
-	6,  // 77: JoystickControl.JoystickControl.startHTTP:input_type -> JoystickControl.Empty
-	6,  // 78: JoystickControl.JoystickControl.stopHTTP:input_type -> JoystickControl.Empty
-	6,  // 79: JoystickControl.JoystickControl.getLinkStream:input_type -> JoystickControl.Empty
-	6,  // 80: JoystickControl.JoystickControl.getTelemetryStream:input_type -> JoystickControl.Empty
-	6,  // 81: JoystickControl.JoystickControl.getEvalStream:input_type -> JoystickControl.Empty
-	20, // 82: JoystickControl.JoystickControl.getTransmitterStream:input_type -> JoystickControl.GetTransmitterStreamReq
-	17, // 83: JoystickControl.JoystickControl.getGamepadStream:input_type -> JoystickControl.GetGamepadStreamReq
-	6,  // 84: JoystickControl.JoystickControl.getCRSFDevices:input_type -> JoystickControl.Empty
-	60, // 85: JoystickControl.JoystickControl.getCRSFDeviceFields:input_type -> JoystickControl.GetCRSFDeviceFieldsReq
-	59, // 86: JoystickControl.JoystickControl.getCRSFDeviceField:input_type -> JoystickControl.GetCRSFDeviceFieldReq
-	62, // 87: JoystickControl.JoystickControl.setCRSFDeviceField:input_type -> JoystickControl.SetCRSFDeviceFieldReq
-	6,  // 88: JoystickControl.JoystickControl.getCRSFDeviceLinkStatus:input_type -> JoystickControl.Empty
-	6,  // 89: JoystickControl.JoystickControl.clearCRSFDeviceLinkCriticalFlags:input_type -> JoystickControl.Empty
-	6,  // 90: JoystickControl.JoystickControl.getAppInfo:input_type -> JoystickControl.Empty
-	11, // 91: JoystickControl.JoystickControl.getGamepads:output_type -> JoystickControl.GetGamepadsRes
-	8,  // 92: JoystickControl.JoystickControl.getTransmitters:output_type -> JoystickControl.GetTransmitterRes
-	13, // 93: JoystickControl.JoystickControl.getConfig:output_type -> JoystickControl.GetConfigRes
-	6,  // 94: JoystickControl.JoystickControl.setConfig:output_type -> JoystickControl.Empty
-	15, // 95: JoystickControl.JoystickControl.validateConfig:output_type -> JoystickControl.ValidateConfigRes
-	6,  // 96: JoystickControl.JoystickControl.startLink:output_type -> JoystickControl.Empty
-	6,  // 97: JoystickControl.JoystickControl.stopLink:output_type -> JoystickControl.Empty
-	6,  // 98: JoystickControl.JoystickControl.startHTTP:output_type -> JoystickControl.Empty
-	6,  // 99: JoystickControl.JoystickControl.stopHTTP:output_type -> JoystickControl.Empty
-	25, // 100: JoystickControl.JoystickControl.getLinkStream:output_type -> JoystickControl.LinkState
-	26, // 101: JoystickControl.JoystickControl.getTelemetryStream:output_type -> JoystickControl.Telemetry
-	24, // 102: JoystickControl.JoystickControl.getEvalStream:output_type -> JoystickControl.EvalStates
-	21, // 103: JoystickControl.JoystickControl.getTransmitterStream:output_type -> JoystickControl.TransmitterChannels
-	19, // 104: JoystickControl.JoystickControl.getGamepadStream:output_type -> JoystickControl.GamepadInputsStates
-	42, // 105: JoystickControl.JoystickControl.getCRSFDevices:output_type -> JoystickControl.GetCRSFDevicesRes
-	43, // 106: JoystickControl.JoystickControl.getCRSFDeviceFields:output_type -> JoystickControl.GetCRSFDeviceFieldsRes
-	61, // 107: JoystickControl.JoystickControl.getCRSFDeviceField:output_type -> JoystickControl.GetCRSFDeviceFieldRes
-	63, // 108: JoystickControl.JoystickControl.setCRSFDeviceField:output_type -> JoystickControl.SetCRSFDeviceFieldRes
-	64, // 109: JoystickControl.JoystickControl.getCRSFDeviceLinkStatus:output_type -> JoystickControl.GetCRSFDeviceLinkStatusRes
-	6,  // 110: JoystickControl.JoystickControl.clearCRSFDeviceLinkCriticalFlags:output_type -> JoystickControl.Empty
-	41, // 111: JoystickControl.JoystickControl.getAppInfo:output_type -> JoystickControl.GetAppInfoRes
-	91, // [91:112] is the sub-list for method output_type
-	70, // [70:91] is the sub-list for method input_type
-	70, // [70:70] is the sub-list for extension type_name
-	70, // [70:70] is the sub-list for extension extendee
-	0,  // [0:70] is the sub-list for field type_name
+	3,  // 14: JoystickControl.LinkState.module_type:type_name -> JoystickControl.ModuleType
+	39, // 15: JoystickControl.Telemetry.link_stats:type_name -> JoystickControl.LinkStatsData
+	38, // 16: JoystickControl.Telemetry.attitude:type_name -> JoystickControl.AttitudeData
+	41, // 17: JoystickControl.Telemetry.battery:type_name -> JoystickControl.BatteryData
+	40, // 18: JoystickControl.Telemetry.gps:type_name -> JoystickControl.GPSData
+	34, // 19: JoystickControl.Telemetry.flight_mode:type_name -> JoystickControl.FlightModeData
+	37, // 20: JoystickControl.Telemetry.sync:type_name -> JoystickControl.SyncData
+	35, // 21: JoystickControl.Telemetry.link_tx:type_name -> JoystickControl.LinkTXData
+	36, // 22: JoystickControl.Telemetry.link_rx:type_name -> JoystickControl.LinkRXData
+	31, // 23: JoystickControl.Telemetry.barometer:type_name -> JoystickControl.BarometerData
+	32, // 24: JoystickControl.Telemetry.variometer:type_name -> JoystickControl.VariometerData
+	33, // 25: JoystickControl.Telemetry.barometer_variometer:type_name -> JoystickControl.BarometerVariometerData
+	30, // 26: JoystickControl.Telemetry.device_info:type_name -> JoystickControl.CRSFDeviceInfoData
+	29, // 27: JoystickControl.Telemetry.device_field_entry:type_name -> JoystickControl.CRSFDeviceFieldEntryData
+	45, // 28: JoystickControl.Telemetry.device_field:type_name -> JoystickControl.CRSFDeviceFieldData
+	28, // 29: JoystickControl.Telemetry.device_link_status:type_name -> JoystickControl.CRSFDeviceLinkStatusData
+	6,  // 30: JoystickControl.CRSFDeviceLinkStatusData.flags:type_name -> JoystickControl.LinkStatusFlag
+	4,  // 31: JoystickControl.CRSFDeviceFieldEntryData.data_type:type_name -> JoystickControl.CRSFDeviceFieldType
+	30, // 32: JoystickControl.GetCRSFDevicesRes.devices:type_name -> JoystickControl.CRSFDeviceInfoData
+	45, // 33: JoystickControl.GetCRSFDeviceFieldsRes.fields:type_name -> JoystickControl.CRSFDeviceFieldData
+	46, // 34: JoystickControl.CRSFDeviceFieldData.uint8:type_name -> JoystickControl.CRSFDeviceFieldUint8
+	47, // 35: JoystickControl.CRSFDeviceFieldData.int8:type_name -> JoystickControl.CRSFDeviceFieldInt8
+	48, // 36: JoystickControl.CRSFDeviceFieldData.uint16:type_name -> JoystickControl.CRSFDeviceFieldUint16
+	49, // 37: JoystickControl.CRSFDeviceFieldData.int16:type_name -> JoystickControl.CRSFDeviceFieldInt16
+	50, // 38: JoystickControl.CRSFDeviceFieldData.uint32:type_name -> JoystickControl.CRSFDeviceFieldUint32
+	51, // 39: JoystickControl.CRSFDeviceFieldData.int32:type_name -> JoystickControl.CRSFDeviceFieldInt32
+	52, // 40: JoystickControl.CRSFDeviceFieldData.uint64:type_name -> JoystickControl.CRSFDeviceFieldUint64
+	53, // 41: JoystickControl.CRSFDeviceFieldData.int64:type_name -> JoystickControl.CRSFDeviceFieldInt64
+	54, // 42: JoystickControl.CRSFDeviceFieldData.float:type_name -> JoystickControl.CRSFDeviceFieldFloat
+	59, // 43: JoystickControl.CRSFDeviceFieldData.text_select:type_name -> JoystickControl.CRSFDeviceFieldTextSelect
+	56, // 44: JoystickControl.CRSFDeviceFieldData.string:type_name -> JoystickControl.CRSFDeviceFieldString
+	57, // 45: JoystickControl.CRSFDeviceFieldData.folder:type_name -> JoystickControl.CRSFDeviceFieldFolder
+	55, // 46: JoystickControl.CRSFDeviceFieldData.info:type_name -> JoystickControl.CRSFDeviceFieldInfo
+	58, // 47: JoystickControl.CRSFDeviceFieldData.command:type_name -> JoystickControl.CRSFDeviceFieldCommand
+	4,  // 48: JoystickControl.CRSFDeviceFieldUint8.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 49: JoystickControl.CRSFDeviceFieldInt8.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 50: JoystickControl.CRSFDeviceFieldUint16.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 51: JoystickControl.CRSFDeviceFieldInt16.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 52: JoystickControl.CRSFDeviceFieldUint32.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 53: JoystickControl.CRSFDeviceFieldInt32.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 54: JoystickControl.CRSFDeviceFieldUint64.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 55: JoystickControl.CRSFDeviceFieldInt64.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 56: JoystickControl.CRSFDeviceFieldFloat.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 57: JoystickControl.CRSFDeviceFieldInfo.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 58: JoystickControl.CRSFDeviceFieldString.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 59: JoystickControl.CRSFDeviceFieldFolder.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	4,  // 60: JoystickControl.CRSFDeviceFieldCommand.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	5,  // 61: JoystickControl.CRSFDeviceFieldCommand.step:type_name -> JoystickControl.CRSFDeviceFieldCommandStep
+	4,  // 62: JoystickControl.CRSFDeviceFieldTextSelect.type:type_name -> JoystickControl.CRSFDeviceFieldType
+	30, // 63: JoystickControl.GetCRSFDeviceFieldReq.device:type_name -> JoystickControl.CRSFDeviceInfoData
+	30, // 64: JoystickControl.GetCRSFDeviceFieldsReq.device:type_name -> JoystickControl.CRSFDeviceInfoData
+	45, // 65: JoystickControl.GetCRSFDeviceFieldRes.field:type_name -> JoystickControl.CRSFDeviceFieldData
+	30, // 66: JoystickControl.SetCRSFDeviceFieldReq.device:type_name -> JoystickControl.CRSFDeviceInfoData
+	45, // 67: JoystickControl.SetCRSFDeviceFieldReq.field:type_name -> JoystickControl.CRSFDeviceFieldData
+	45, // 68: JoystickControl.SetCRSFDeviceFieldRes.field:type_name -> JoystickControl.CRSFDeviceFieldData
+	28, // 69: JoystickControl.GetCRSFDeviceLinkStatusRes.link_status:type_name -> JoystickControl.CRSFDeviceLinkStatusData
+	24, // 70: JoystickControl.EvalStates.StatesEntry.value:type_name -> JoystickControl.EvalState
+	7,  // 71: JoystickControl.JoystickControl.getGamepads:input_type -> JoystickControl.Empty
+	7,  // 72: JoystickControl.JoystickControl.getTransmitters:input_type -> JoystickControl.Empty
+	7,  // 73: JoystickControl.JoystickControl.getConfig:input_type -> JoystickControl.Empty
+	15, // 74: JoystickControl.JoystickControl.setConfig:input_type -> JoystickControl.SetConfigReq
+	7,  // 75: JoystickControl.JoystickControl.validateConfig:input_type -> JoystickControl.Empty
+	17, // 76: JoystickControl.JoystickControl.startLink:input_type -> JoystickControl.StartLinkReq
+	7,  // 77: JoystickControl.JoystickControl.stopLink:input_type -> JoystickControl.Empty
+	7,  // 78: JoystickControl.JoystickControl.startHTTP:input_type -> JoystickControl.Empty
+	7,  // 79: JoystickControl.JoystickControl.stopHTTP:input_type -> JoystickControl.Empty
+	7,  // 80: JoystickControl.JoystickControl.getLinkStream:input_type -> JoystickControl.Empty
+	7,  // 81: JoystickControl.JoystickControl.getTelemetryStream:input_type -> JoystickControl.Empty
+	7,  // 82: JoystickControl.JoystickControl.getEvalStream:input_type -> JoystickControl.Empty
+	21, // 83: JoystickControl.JoystickControl.getTransmitterStream:input_type -> JoystickControl.GetTransmitterStreamReq
+	18, // 84: JoystickControl.JoystickControl.getGamepadStream:input_type -> JoystickControl.GetGamepadStreamReq
+	7,  // 85: JoystickControl.JoystickControl.getCRSFDevices:input_type -> JoystickControl.Empty
+	61, // 86: JoystickControl.JoystickControl.getCRSFDeviceFields:input_type -> JoystickControl.GetCRSFDeviceFieldsReq
+	60, // 87: JoystickControl.JoystickControl.getCRSFDeviceField:input_type -> JoystickControl.GetCRSFDeviceFieldReq
+	63, // 88: JoystickControl.JoystickControl.setCRSFDeviceField:input_type -> JoystickControl.SetCRSFDeviceFieldReq
+	7,  // 89: JoystickControl.JoystickControl.getCRSFDeviceLinkStatus:input_type -> JoystickControl.Empty
+	7,  // 90: JoystickControl.JoystickControl.clearCRSFDeviceLinkCriticalFlags:input_type -> JoystickControl.Empty
+	7,  // 91: JoystickControl.JoystickControl.getAppInfo:input_type -> JoystickControl.Empty
+	12, // 92: JoystickControl.JoystickControl.getGamepads:output_type -> JoystickControl.GetGamepadsRes
+	9,  // 93: JoystickControl.JoystickControl.getTransmitters:output_type -> JoystickControl.GetTransmitterRes
+	14, // 94: JoystickControl.JoystickControl.getConfig:output_type -> JoystickControl.GetConfigRes
+	7,  // 95: JoystickControl.JoystickControl.setConfig:output_type -> JoystickControl.Empty
+	16, // 96: JoystickControl.JoystickControl.validateConfig:output_type -> JoystickControl.ValidateConfigRes
+	7,  // 97: JoystickControl.JoystickControl.startLink:output_type -> JoystickControl.Empty
+	7,  // 98: JoystickControl.JoystickControl.stopLink:output_type -> JoystickControl.Empty
+	7,  // 99: JoystickControl.JoystickControl.startHTTP:output_type -> JoystickControl.Empty
+	7,  // 100: JoystickControl.JoystickControl.stopHTTP:output_type -> JoystickControl.Empty
+	26, // 101: JoystickControl.JoystickControl.getLinkStream:output_type -> JoystickControl.LinkState
+	27, // 102: JoystickControl.JoystickControl.getTelemetryStream:output_type -> JoystickControl.Telemetry
+	25, // 103: JoystickControl.JoystickControl.getEvalStream:output_type -> JoystickControl.EvalStates
+	22, // 104: JoystickControl.JoystickControl.getTransmitterStream:output_type -> JoystickControl.TransmitterChannels
+	20, // 105: JoystickControl.JoystickControl.getGamepadStream:output_type -> JoystickControl.GamepadInputsStates
+	43, // 106: JoystickControl.JoystickControl.getCRSFDevices:output_type -> JoystickControl.GetCRSFDevicesRes
+	44, // 107: JoystickControl.JoystickControl.getCRSFDeviceFields:output_type -> JoystickControl.GetCRSFDeviceFieldsRes
+	62, // 108: JoystickControl.JoystickControl.getCRSFDeviceField:output_type -> JoystickControl.GetCRSFDeviceFieldRes
+	64, // 109: JoystickControl.JoystickControl.setCRSFDeviceField:output_type -> JoystickControl.SetCRSFDeviceFieldRes
+	65, // 110: JoystickControl.JoystickControl.getCRSFDeviceLinkStatus:output_type -> JoystickControl.GetCRSFDeviceLinkStatusRes
+	7,  // 111: JoystickControl.JoystickControl.clearCRSFDeviceLinkCriticalFlags:output_type -> JoystickControl.Empty
+	42, // 112: JoystickControl.JoystickControl.getAppInfo:output_type -> JoystickControl.GetAppInfoRes
+	92, // [92:113] is the sub-list for method output_type
+	71, // [71:92] is the sub-list for method input_type
+	71, // [71:71] is the sub-list for extension type_name
+	71, // [71:71] is the sub-list for extension extendee
+	0,  // [0:71] is the sub-list for field type_name
 }
 
 func init() { file_server_proto_init() }
@@ -5357,7 +5424,7 @@ func file_server_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_server_proto_rawDesc), len(file_server_proto_rawDesc)),
-			NumEnums:      6,
+			NumEnums:      7,
 			NumMessages:   60,
 			NumExtensions: 0,
 			NumServices:   1,
