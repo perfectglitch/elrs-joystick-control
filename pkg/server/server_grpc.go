@@ -127,6 +127,9 @@ func (s *GRPCServer) SetConfig(_ context.Context, req *pb.SetConfigReq) (*pb.Emp
 }
 
 func (s *GRPCServer) StartHTTP(context.Context, *pb.Empty) (*pb.Empty, error) {
+	if s.HTTPCtl == nil {
+		return nil, status.Error(codes.Unavailable, "HTTP server is not available in headless mode")
+	}
 	if err := s.HTTPCtl.Start(); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -134,6 +137,9 @@ func (s *GRPCServer) StartHTTP(context.Context, *pb.Empty) (*pb.Empty, error) {
 }
 
 func (s *GRPCServer) StopHTTP(context.Context, *pb.Empty) (*pb.Empty, error) {
+	if s.HTTPCtl == nil {
+		return &pb.Empty{}, nil
+	}
 	if err := s.HTTPCtl.Stop(); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

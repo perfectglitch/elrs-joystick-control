@@ -19,6 +19,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -41,6 +42,9 @@ func main() {
 	disableWebUI := new(bool)
 	flag.BoolVar(disableWebUI, "disable-web-ui", false, "disable the Web-UI HTTP server")
 
+	headless := new(bool)
+	flag.BoolVar(headless, "headless", false, "headless mode: disable HTTP server and gRPC server, keeping only TX link and device input")
+
 	udpJoystickPort := new(int)
 	flag.IntVar(udpJoystickPort, "udp-joystick-port", 9000, "UDP server port for remote joystick input")
 
@@ -49,9 +53,6 @@ func main() {
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 	reflection.Register(grpcServer)
 
-	httpCtl := hc.NewCtl(*webAppPort, grpcServer)
-	defer httpCtl.Quit()
-
 	devicesCtl := dc.NewCtl()
 	defer devicesCtl.Quit()
 
@@ -59,7 +60,6 @@ func main() {
 	dc.SetDeviceEventCallback(devicesCtl.AlertDeviceChan)
 
 	configCtl := cc.NewCtl(devicesCtl)
-
 	defer configCtl.Quit()
 
 	serialCtl := sc.NewCtl()
@@ -68,22 +68,46 @@ func main() {
 	linkCtl := lc.NewCtl(devicesCtl, serialCtl, configCtl)
 	defer linkCtl.Quit()
 
+	if *headless {
+		// Headless mode: no HTTP server, gRPC is used only for startup configuration
+		// then stopped to free the port.
+		serverCtl := gc.NewCtl(*grpcPort, grpcServer, devicesCtl, serialCtl, configCtl, linkCtl, nil, *udpJoystickPort)
+
+		// Apply config and start TX link via gRPC (disableWebUI=false: HTTP never started)
+		client.Init(*txServerPortName, *configFilePath, *txServerPortBaudRate, *grpcPort, false)
+
+		// Stop gRPC – no longer needed in headless mode
+		if err := serverCtl.Stop(); err != nil {
+			fmt.Printf("could not stop gRPC controller. %s\n", err.Error())
+		}
+
+		fmt.Println("Running in headless mode. Press Ctrl-C or send SIGTERM to exit.")
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+		<-sigChan
+		fmt.Println("Signal received, exiting")
+		return
+	}
+
+	httpCtl := hc.NewCtl(*webAppPort, grpcServer)
+	defer httpCtl.Quit()
+
 	serverCtl := gc.NewCtl(*grpcPort, grpcServer, devicesCtl, serialCtl, configCtl, linkCtl, httpCtl, *udpJoystickPort)
 	defer serverCtl.Quit()
 
-	// Automatically configure through gprc when conditions are met
+	// Automatically configure through gRPC when conditions are met
 	client.Init(*txServerPortName, *configFilePath, *txServerPortBaudRate, *grpcPort, *disableWebUI)
 
 	go func() {
-		sigChan := make(chan os.Signal)
-		signal.Notify(sigChan, os.Interrupt)
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 		<-sigChan
-		fmt.Println("Ctrl-C detected, exiting")
+		fmt.Println("Signal received, exiting")
 		if err := httpCtl.Stop(); err != nil {
 			fmt.Printf("could not stop HTTP controller. %s\n", err.Error())
 		}
 		if err := serverCtl.Stop(); err != nil {
-			fmt.Printf("could not stop HTTP controller. %s\n", err.Error())
+			fmt.Printf("could not stop gRPC controller. %s\n", err.Error())
 		}
 	}()
 

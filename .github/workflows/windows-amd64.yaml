@@ -21,7 +21,8 @@ jobs:
           go generate ./... && 
           go build -trimpath -tags static -o elrs-joystick-control.exe .\cmd\elrs-joystick-control\. &&
           go build -trimpath -tags static -o udp-forwarder.exe .\cmd\udp-forwarder\. &&
-          go run scripts\cmd\build-release-zip\build-release-zip.go --location C:\app --prefix elrs-joystick-control --files *.exe,LICENSE* "
+          copy C:\mingw64\bin\SDL2.dll . &&
+          go run scripts\cmd\build-release-zip\build-release-zip.go --location C:\app --prefix elrs-joystick-control --files *.exe,*.dll,LICENSE* "
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:

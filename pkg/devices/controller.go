@@ -127,15 +127,21 @@ func (c *Controller) StartPolling() {
 			}
 		})
 
-		//var event sdl.Event
 		for {
+			// Check for shutdown before blocking
 			select {
 			case <-c.t.Dying():
 				fmt.Println("(devices): exiting polling loop")
 				return nil
 			default:
-				if event := sdl.PollEvent(); event != nil {
-					c.AlertDeviceChan()
+			}
+
+			// Block up to 8ms waiting for an SDL event instead of busy-spinning.
+			// This drops CPU usage from ~100% of one core to near-zero when idle.
+			if event := sdl.WaitEventTimeout(8); event != nil {
+				c.AlertDeviceChan()
+				// Drain any additional queued events to avoid backlog before blocking again.
+				for sdl.PollEvent() != nil {
 				}
 			}
 		}
