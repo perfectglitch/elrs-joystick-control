@@ -29,4 +29,4 @@ docker run --rm -it -m 4096m \
 	-e GOOS=linux \
 	-e GOARCH=amd64 \
 	${IMAGE_NAME} \
-	"cd /app && go generate ./... && go build -tags static --ldflags '-s -w' -o ${OUT_PATH} ./cmd/elrs-joystick-control"
+	"cd /app && go generate ./... && go build -tags dynamic --ldflags '-s -w' -o ${OUT_PATH} ./cmd/elrs-joystick-control"

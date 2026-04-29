@@ -32,6 +32,6 @@ docker run --rm \
   -e CGO_ENABLED=1 \
   -e GOOS=linux \
   -e GOARCH=arm64 \
-  "${IMAGE_NAME}" "cd /src && go generate ./...  && /go-sdk/bin/go build -v -o '${OUT_PATH}' ./cmd/elrs-joystick-control"
+  "${IMAGE_NAME}" "cd /src && go generate ./...  && /go-sdk/bin/go build -v -tags dynamic -o '${OUT_PATH}' ./cmd/elrs-joystick-control"
 
 echo "Build finished: ${OUT_PATH}"

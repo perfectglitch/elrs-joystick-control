@@ -446,28 +446,3 @@ steps to build the application:
   exit
   ```
   The binary executable should be on the root of the repo now.
-
-
-
-## Compiling Linux / armhf (Raspberry Pi 4)
-
-* Use [Raspberry Pi imager](https://www.raspberrypi.com/software/) to install Raspberry Pi OS (32bit) on a microSD card
-  
-* Boot up the Raspberry Pi 4 from the microSD card
-
-* Get the latest software package
-  ```
-  sudo apt-get update
-  ```
-
-* From a new terminal, clone this repo 
-  ```
-  git clone https://github.com/kaack/elrs-joystick-control.git
-  ```
-  
-* Switch to the repo directory, and run build script
-  ```
-  cd elrs-joystick-control
-  ./build-raspbian32-linux-armhf.sh
-  ```
-  The executable binary will be at the root of the repo
