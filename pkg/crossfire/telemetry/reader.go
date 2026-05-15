@@ -186,20 +186,27 @@ func Unmarshal(data []byte) (TelemType, error) {
 	fAddr := crossfire.Endpoint(data[0])
 	fType := crossfire.FrameType(data[2])
 
-	if fAddr == crossfire.HandsetEndpoint && fType == crossfire.StatusFrame {
+	// ELRS 3.x uses HandsetEndpoint (0xEA); ELRS 4.0 uses FlightControllerEndpoint
+	// (0xC8) as the spec-compliant universal UART sync byte for all frames.
+	if fAddr != crossfire.HandsetEndpoint && fAddr != crossfire.FlightControllerEndpoint {
+		fmt.Printf("(recv-loop) unknown frame: %x\n", data)
+		return nil, nil
+	}
+
+	if fType == crossfire.StatusFrame {
 		frame := StatusExtFrame{RawData: data}
 		return &frame, nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.ParameterSettingsEntryFrame {
+	} else if fType == crossfire.ParameterSettingsEntryFrame {
 		if len(data) < MinExtendedFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as extended device entry settings telemetry frame. length is too small", data))
 		}
 		return NewDeviceSettingsEntryExtFrame(data), nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.DeviceInfoFrame {
+	} else if fType == crossfire.DeviceInfoFrame {
 		if len(data) < MinExtendedFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as extended device info telemetry frame. length is too small", data))
 		}
 		return NewDeviceInfoExtFrame(data), nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.RadioFrame {
+	} else if fType == crossfire.RadioFrame {
 		if len(data) < MinExtendedFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as extended radio telemetry frame. length is too small", data))
 		}
@@ -208,47 +215,47 @@ func Unmarshal(data []byte) (TelemType, error) {
 			frame := SyncExtFrame{RawData: data}
 			return &frame, nil
 		}
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.BatteryFrame {
+	} else if fType == crossfire.BatteryFrame {
 		if len(data) != BatteryFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as battery telemetry frame. expected length %d, but got %d", data, BatteryFrameSize, len(data)))
 		}
 		frame := BatteryFrame{RawData: data}
 		return &frame, nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.AltitudeFrame {
+	} else if fType == crossfire.AltitudeFrame {
 		if len(data) < AttitudeFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as attitude telemetry frame. expected length %d, but got %d", data, AttitudeFrameSize, len(data)))
 		}
 		frame := AttitudeFrame{RawData: data}
 		return &frame, nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.FlightModeFrame {
+	} else if fType == crossfire.FlightModeFrame {
 		//frame is variable size (depends on the mode)
 		frame := FlightModeFrame{RawData: data}
 		return &frame, nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.LinkStatsFrame {
+	} else if fType == crossfire.LinkStatsFrame {
 		if len(data) < LinkStatsFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as link-stats telemetry frame. expected length %d, but got %d", data, LinkStatsFrameSize, len(data)))
 		}
 		frame := LinkStatsFrame{RawData: data}
 		return &frame, nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.LinkRxFrame {
+	} else if fType == crossfire.LinkRxFrame {
 		if len(data) < LinkRXFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as link-rx telemetry frame. expected length %d, but got %d", data, LinkRXFrameSize, len(data)))
 		}
 		frame := LinkRXFrame{RawData: data}
 		return &frame, nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.LinkTxFrame {
+	} else if fType == crossfire.LinkTxFrame {
 		if len(data) < LinkTXFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as link-tx telemetry frame. expected length %d, but got %d", data, LinkTXFrameSize, len(data)))
 		}
 		frame := LinkTXFrame{RawData: data}
 		return &frame, nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.GpsFrame {
+	} else if fType == crossfire.GpsFrame {
 		if len(data) < GPSFrameSize {
 			return nil, errors.New(fmt.Sprintf("cannot unmarshal %x as gps telemetry frame. expected length %d, but got %d", data, GPSFrameSize, len(data)))
 		}
 		frame := GPSFrame{RawData: data}
 		return &frame, nil
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.BaroAltFrame {
+	} else if fType == crossfire.BaroAltFrame {
 		if len(data) == BarometerFrameSize {
 			//TBS sends barometer data by itself
 			frame := BarometerFrame{RawData: data}
@@ -257,14 +264,12 @@ func Unmarshal(data []byte) (TelemType, error) {
 			frame := BarometerVariometerFrame{RawData: data}
 			return &frame, nil
 		}
-	} else if fAddr == crossfire.HandsetEndpoint && fType == crossfire.VarioFrame {
+	} else if fType == crossfire.VarioFrame {
 		//TBS sends variometer data by itself
 		if len(data) == VariometerFrameSize {
 			frame := VariometerFrame{RawData: data}
 			return &frame, nil
 		}
-	} else {
-		fmt.Printf("(recv-loop) unknown frame: %x\n", data)
 	}
 
 	//unknown telemetry frame, ignore it

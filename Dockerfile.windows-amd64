@@ -1,142 +1,99 @@
 # SPDX-FileCopyrightText: © 2023 OneEyeFPV oneeyefpv@gmail.com
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-License-Identifier: FS-0.9-or-later
+#
+# Cross-compiles a Windows amd64 binary from a Linux host using MinGW-w64.
+# No Windows host or Windows containers required.
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2022 as builder-stage
+FROM ubuntu:20.04
 
 LABEL maintainer="oneeyefpv@gmail.com"
 
-
 # GoLang
 ARG GO_VERSION=1.23.6
-ARG GO_ZIP_FILE=go${GO_VERSION}.windows-amd64.zip
-ARG GO_ZIP_URL=https://dl.google.com/go/${GO_ZIP_FILE}
+ARG GO_TARGZ_URL=https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz
 
 # protoc
 ARG PROTOC_VERSION=23.4
-ARG PROTOC_ZIP_FILE=protoc-${PROTOC_VERSION}-win64.zip
-ARG PROTOC_ZIP_URL=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP_FILE}
+ARG PROTOC_ZIP_URL=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
 
 # protoc-gen-grpc-web
 ARG GRPC_WEB_VERSION=1.4.2
-ARG GRPC_WEB_ZIP_FILE=protoc-gen-grpc-web-${GRPC_WEB_VERSION}-windows-x86_64.exe
-ARG GRPC_WEB_ZIP_URL=https://github.com/grpc/grpc-web/releases/download/${GRPC_WEB_VERSION}/${GRPC_WEB_ZIP_FILE}
+ARG GRPC_WEB_BIN_URL=https://github.com/grpc/grpc-web/releases/download/${GRPC_WEB_VERSION}/protoc-gen-grpc-web-${GRPC_WEB_VERSION}-linux-x86_64
 
 # protoc-gen-js
 ARG PROTOC_JS_VERSION=3.21.2
-ARG PROTOC_JS_ZIP_FILE=protobuf-javascript-${PROTOC_JS_VERSION}-win64.zip
-ARG PROTOC_JS_URL=https://github.com/protocolbuffers/protobuf-javascript/releases/download/v${PROTOC_JS_VERSION}/${PROTOC_JS_ZIP_FILE}
+ARG PROTOC_JS_TARGZ_URL=https://github.com/protocolbuffers/protobuf-javascript/releases/download/v${PROTOC_JS_VERSION}/protobuf-javascript-${PROTOC_JS_VERSION}-linux-x86_64.tar.gz
 
 # node
 ARG NODE_VERSION=18.17.0
-ARG NODE_ZIP_URL=https://nodejs.org/dist/v18.17.0/node-v18.17.0-win-x64.zip
-
-# 7z
-ARG S7Z_VERSION=2301
-ARG S7Z_URL=https://www.7-zip.org/a/7z${S7Z_VERSION}-x64.exe
-
-# mingw
-ARG MINGW_VERSION=13.1.0
-ARG MINGW_RT=rt_v11-rev1
-ARG MINGW_7Z_URL=https://github.com/niXman/mingw-builds-binaries/releases/download/${MINGW_VERSION}-${MINGW_RT}/x86_64-${MINGW_VERSION}-release-win32-seh-msvcrt-${MINGW_RT}.7z
+ARG NODE_TARGZ_URL=https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz
 
 # sdl2
 ARG SDL2_VERSION=2.28.1
-ARG SDL2_ZIP_FILE=https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/SDL2-devel-${SDL2_VERSION}-mingw.zip
+ARG SDL2_ZIP_URL=https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/SDL2-devel-${SDL2_VERSION}-mingw.zip
 
-# Restore the default Windows shell for correct batch processing.
-SHELL ["cmd", "/S", "/C"]
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN echo "*** Install Microsoft build tools" && \
-    curl -sfLO https://aka.ms/vs/17/release/vs_buildtools.exe \
-    && (start /w vs_buildtools.exe --quiet --wait --norestart --nocache \
-        --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools" \
-        --add Microsoft.VisualStudio.Workload.AzureBuildTools \
-        --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 \
-        --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 \
-        --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 \
-        --remove Microsoft.VisualStudio.Component.Windows81SDK \
-        || IF "%ERRORLEVEL%"=="3010" EXIT 0) \
-    && del /q vs_buildtools.exe
+# install core utilities, native gcc (for go generate), and MinGW-w64 cross-compiler
+RUN apt-get update && apt-get install -y \
+    curl zip unzip \
+    gcc \
+    gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
 
-RUN echo "*** Install Microsoft Visual C++ redistributable packages runtime" && \
-    curl -sfLO https://aka.ms/vs/17/release/vc_redist.x64.exe \
-    && (start /w vc_redist.x64.exe /install /quiet /norestart /nocache ) \
-    && del /q vc_redist.x64.exe
+RUN echo "**** Download and install golang version: ${GO_VERSION}" \
+    && echo "**** url: ${GO_TARGZ_URL}" \
+    && curl -o go.tar.gz -sfL "${GO_TARGZ_URL}" \
+    && tar -xf go.tar.gz \
+    && mv go go-sdk \
+    && mkdir go
 
-RUN echo "**** Download and install golang version: %GO_VERSION%" \
-    && echo "**** url: %GO_ZIP_URL%" \
-    && curl -sfLO %GO_ZIP_URL% \
-    && powershell -Command "Expand-Archive -LiteralPath '%GO_ZIP_FILE%' -DestinationPath C:\ ; Rename-Item -Path 'C:\go' -NewName 'go-sdk'" \
-    && mkdir C:\go \
-    && setx path "%path%;C:\\go-sdk\\bin;C:\\go\\bin" \
-    && setx GOROOT "C:\\go-sdk" \
-    && setx GOPATH "C:\\go"
+ENV PATH="${PATH}:/go-sdk/bin:/go/bin"
 
-RUN echo "*** Download and install protoc version %PROTOC_VERSION%" \
-    && echo "*** url: %PROTOC_ZIP_URL%" \
-    && curl -sfLO %PROTOC_ZIP_URL% \
-    && mkdir C:\protoc \
-    && powershell -Command "Expand-Archive -LiteralPath '%PROTOC_ZIP_FILE%' -DestinationPath 'C:\\protoc'" \
-    && setx path "%path%;C:\\protoc\\bin"
+RUN echo "*** Download and install protoc version ${PROTOC_VERSION}" \
+    && curl -o protoc.zip -sfL "${PROTOC_ZIP_URL}" \
+    && unzip protoc.zip -d protoc
 
-RUN echo "*** Download and install grpc-web protoc plugin version %GRPC_WEB_VERSION%" \
-    && echo "*** url: %GRPC_WEB_ZIP_URL%" \
-    && curl -sfLO %GRPC_WEB_ZIP_URL% \
-    && move %GRPC_WEB_ZIP_FILE% protoc\bin\protoc-gen-grpc-web.exe
+ENV PATH="${PATH}:/protoc/bin"
 
-RUN echo "*** Download and install protoc-js version %PROTOC_JS_VERSION%" \
-    && echo "*** url: %PROTOC_JS_ZIP_FILE%" \
-    && curl -sfLO %PROTOC_JS_URL% \
-    && mkdir C:\protoc-js \
-    && powershell -Command "Expand-Archive -LiteralPath '%PROTOC_JS_ZIP_FILE%' -DestinationPath 'C:\\protoc-js'" \
-    && setx path "%path%;C:\\protoc-js\\bin"
+RUN echo "*** Download and install grpc-web protoc plugin version ${GRPC_WEB_VERSION}" \
+    && curl -o protoc/bin/protoc-gen-grpc-web -sfL "${GRPC_WEB_BIN_URL}" \
+    && chmod a+x protoc/bin/protoc-gen-grpc-web
 
-RUN echo "*** Download and install node version %NODE_VERSION%" \
-    && echo "url: %NODE_ZIP_URL%" \
-    && curl -sfL %NODE_ZIP_URL% -o node-x64.zip \
-    && powershell -Command "Expand-Archive -LiteralPath 'node-x64.zip' -DestinationPath 'C:\\tmp_node' ; New-Item -ItemType Directory -Path 'C:\\node' -Force | Out-Null ; Get-ChildItem -Path 'C:\\tmp_node' -Directory | ForEach-Object { Copy-Item -Path ($_.FullName + '\\*') -Destination 'C:\\node' -Recurse -Force } ; Remove-Item -Recurse -Force 'C:\\tmp_node'" \
-    && setx path "%path%;C:\\node;C:\\node\\node_modules\\npm\\bin"
+RUN echo "*** Download and install protoc-js version ${PROTOC_JS_VERSION}" \
+    && curl -o protoc-js.tar.gz -sfL "${PROTOC_JS_TARGZ_URL}" \
+    && mkdir protoc-js \
+    && tar -xf protoc-js.tar.gz -C protoc-js
 
-RUN echo "*** Verify node/npm" \
-    && node -v \
-    && npm -v
+ENV PATH="${PATH}:/protoc-js/bin"
 
-RUN echo "*** Downloading 7z version %S7Z_VERSION%" \
-    && echo "url: %S7Z_URL% " \
-    && curl -sfL %S7Z_URL% -o 7z-x64.exe \
-    && start /b /w 7z-x64.exe  /S \
-    && setx path "%path%;C:\Program Files\7-Zip"
+RUN echo "*** Download and install node version ${NODE_VERSION}" \
+    && curl -o node.tar.gz -sfL "${NODE_TARGZ_URL}" \
+    && mkdir node \
+    && tar xf node.tar.gz --strip-components=1 -C node
 
-RUN echo "*** Download and install mingw version %MINGW_VERSION% revision %MINGW_VERSION" \
-    && echo "url: %MINGW_7Z_URL%" \
-    && curl -sfL %MINGW_7Z_URL%  -o mingw.7z\
-    && set PATH=%PATH%;C:\Program Files\7-Zip \
-    && 7z x mingw.7z
+ENV PATH="${PATH}:/node/bin"
 
-RUN echo "*** Download and install SDL2 version %SDL2_VERSION%" \
-    && echo "url: %SDL2_ZIP_FILE%" \
-    && curl -sfL %SDL2_ZIP_FILE%  -o sdl2-mingw.zip \
-    && powershell -Command "Expand-Archive -LiteralPath 'sdl2-mingw.zip' -DestinationPath 'C:\\tmp_sdl' ; New-Item -ItemType Directory -Path 'C:\\mingw64' -Force | Out-Null ; Copy-Item -Path 'C:\\tmp_sdl\\SDL2-%SDL2_VERSION%\\x86_64-w64-mingw32\\*' -Destination 'C:\\mingw64' -Recurse -Force ; Remove-Item -Recurse -Force 'C:\\tmp_sdl'"
+RUN echo "*** Installing protoc-gen-go / protoc-gen-go-grpc" \
+    && export GOPATH=/go \
+    && export GOROOT=/go-sdk \
+    && go install google.golang.org/protobuf/cmd/protoc-gen-go@latest \
+    && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
+# Download SDL2 MinGW development libraries and install headers/libs
+RUN echo "*** Download and install SDL2 MinGW dev libs version ${SDL2_VERSION}" \
+    && curl -o sdl2-mingw.zip -sfL "${SDL2_ZIP_URL}" \
+    && unzip sdl2-mingw.zip -d /tmp/sdl2 \
+    && cp -r /tmp/sdl2/SDL2-${SDL2_VERSION}/x86_64-w64-mingw32/include/* /usr/x86_64-w64-mingw32/include/ \
+    && cp -r /tmp/sdl2/SDL2-${SDL2_VERSION}/x86_64-w64-mingw32/lib/*    /usr/x86_64-w64-mingw32/lib/ \
+    && rm -rf /tmp/sdl2 sdl2-mingw.zip
 
-RUN  echo "*** Installing protoc-gen-go / protoc-gen-go-grpc" && \
-    set GOPATH=C:\go&& \
-    set GOROOT=C:\go-sdk&& \
-    set GOARCH=amd64&& \
-    set GOOS=windows&& \
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+ENV CC=x86_64-w64-mingw32-gcc
+ENV CXX=x86_64-w64-mingw32-g++
+ENV CGO_ENABLED=1
+ENV GOPATH=/go
+ENV GOROOT=/go-sdk
+ENV GOARCH=amd64
+ENV GOOS=windows
 
-
-RUN echo "*** Running go generate ./..." && \
-    setx path "%path%;C:\mingw64\bin;C:\mingw64\include" && \
-    setx CC "gcc" && \
-    setx CGO_ENABLED "1" && \
-    setx GOPATH "C:\go" && \
-    setx GOROOT "C:\go-sdk" && \
-    setx GOARCH "amd64" && \
-    setx GOOS "windows" && \
-    mkdir build
-
-ENTRYPOINT ["cmd.exe"]
+ENTRYPOINT ["bash", "-c"]

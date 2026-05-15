@@ -89,7 +89,7 @@ func main() {
 		return
 	}
 
-	httpCtl := hc.NewCtl(*webAppPort, grpcServer)
+	httpCtl := hc.NewCtl(*webAppPort, grpcServer, linkCtl)
 	defer httpCtl.Quit()
 
 	serverCtl := gc.NewCtl(*grpcPort, grpcServer, devicesCtl, serialCtl, configCtl, linkCtl, httpCtl, *udpJoystickPort)

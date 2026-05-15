@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/kaack/elrs-joystick-control/webapp"
+	lc "github.com/kaack/elrs-joystick-control/pkg/link"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/ttys3/echo-pprof/v4"
@@ -24,12 +25,14 @@ type Controller struct {
 	httpTomb   *tomb.Tomb
 	echo       *echo.Echo
 	gRPCServer *grpc.Server
+	linkCtl    *lc.Controller
 }
 
-func NewCtl(webAppPort int, gRPCServer *grpc.Server) *Controller {
+func NewCtl(webAppPort int, gRPCServer *grpc.Server, linkCtl *lc.Controller) *Controller {
 	httpCtl := &Controller{
 		webAppPort: webAppPort,
 		gRPCServer: gRPCServer,
+		linkCtl:    linkCtl,
 	}
 
 	if err := httpCtl.Init(); err != nil {
@@ -81,6 +84,7 @@ func (c *Controller) NewEcho(err error) (*echo.Echo, error) {
 		HTML5:      true,
 	}))
 
+	echoServer.POST("/api/vtx", c.handleVTX)
 	echoServer.HideBanner = true
 	return echoServer, nil
 }
@@ -135,4 +139,28 @@ func (c *Controller) Quit() {
 	if err := c.Stop(); err != nil {
 		fmt.Printf("error while exiting http controller. %s\n", err.Error())
 	}
+}
+
+type vtxRequest struct {
+	DeviceID       uint8 `json:"device_id"`
+	BandFieldID    uint8 `json:"band_field_id"`
+	Band           uint8 `json:"band"`
+	ChannelFieldID uint8 `json:"channel_field_id"`
+	Channel        uint8 `json:"channel"`
+	PowerFieldID   uint8 `json:"power_field_id"`
+	Power          uint8 `json:"power"`
+}
+
+func (c *Controller) handleVTX(ctx echo.Context) error {
+	if c.linkCtl == nil {
+		return ctx.JSON(http.StatusServiceUnavailable, map[string]string{"error": "link controller not available"})
+	}
+	var req vtxRequest
+	if err := ctx.Bind(&req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+	if err := c.linkCtl.SendVTX(req.DeviceID, req.BandFieldID, req.Band, req.ChannelFieldID, req.Channel, req.PowerFieldID, req.Power); err != nil {
+		return ctx.JSON(http.StatusServiceUnavailable, map[string]string{"error": err.Error()})
+	}
+	return ctx.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }

@@ -11,11 +11,12 @@ import (
 )
 
 func isTelemetryAddress(c crossfire.Endpoint) bool {
-	// Only HandsetEndpoint (0xEA) is valid as the address byte of an incoming
-	// frame.  ModuleEndpoint (0xEE) is our own TX address and appears frequently
-	// inside telemetry payloads; treating it as a frame start causes spurious
-	// CRC-mismatch errors on every 0xEE data byte.
-	return c == crossfire.HandsetEndpoint
+	// ELRS 3.x uses HandsetEndpoint (0xEA) as the frame address byte.
+	// ELRS 4.0 changed to the CRSF-spec-compliant 0xC8 (FlightControllerEndpoint)
+	// as the universal UART sync/start byte for all outgoing frames.
+	// ModuleEndpoint (0xEE) is intentionally excluded: it is our own TX address
+	// and appears frequently inside payloads, causing spurious CRC errors.
+	return c == crossfire.HandsetEndpoint || c == crossfire.FlightControllerEndpoint
 }
 
 func BarometerAltitude(data []byte) float32 {

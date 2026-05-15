@@ -607,3 +607,16 @@ func (c *Controller) ClearCRSFDeviceLinkCriticalFlags() error {
 
 	return nil
 }
+
+// SendVTX writes VTX band, channel, and power settings directly to the TX module
+// without waiting for any confirmation. This works over write-only (half-duplex)
+// connections where no read-back is possible.
+func (c *Controller) SendVTX(deviceId, bandFieldId, band, channelFieldId, channel, powerFieldId, power uint8) error {
+	if c.sendChan == nil || c.supervisorState != SupervisorActive {
+		return errors.New("link is not active, start RF Link to use this function")
+	}
+	c.sendChan <- &WriteDeviceFieldRequestUint8{deviceId: deviceId, fieldId: bandFieldId, fieldValue: band}
+	c.sendChan <- &WriteDeviceFieldRequestUint8{deviceId: deviceId, fieldId: channelFieldId, fieldValue: channel}
+	c.sendChan <- &WriteDeviceFieldRequestUint8{deviceId: deviceId, fieldId: powerFieldId, fieldValue: power}
+	return nil
+}
